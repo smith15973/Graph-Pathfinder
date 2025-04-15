@@ -4,6 +4,10 @@ export class Graph {
         this.edges = []
     }
 
+    getNode(id) {
+        return this.nodes.find(node => node.id === id.toString())
+    }
+
     addNode(node) {
         this.nodes.push(node);
         return node;
@@ -140,6 +144,39 @@ export class Node {
         this.cost = -1;
         this.parent = null;
     }
+
+    setPosition(x = this.xPos, y = this.yPos) {
+        this.xPos = x;
+        this.yPos = y;
+    }
+    getPosition() {
+        return { xPos: this.xPos, yPos: this.yPos };
+    }
+
+    setId(id) {
+        this.id = id;
+    }
+
+    getId() {
+        return this.id;
+    }
+
+    setCost(cost) {
+        this.cost = cost;
+    }
+
+    getCost() {
+        return this.cost;
+    }
+
+    setParent(parent) {
+        this.parent = parent;
+    }
+
+    getParent() {
+        return this.parent
+    }
+
 }
 
 export class Edge {
@@ -151,11 +188,16 @@ export class Edge {
         this.id = `${this.sourceNodeId}-to-${this.targetNodeId}`
     }
 
+    setWeight(weight) {
+        this.weight = parseInt(weight);
+    }
+
     getWeight() {
         return this.weight
     }
 
-    setWeight(weight) {
-        this.weight = parseInt(weight);
-    }
+    // getCoordinates() {
+    // }
+
+
 }
