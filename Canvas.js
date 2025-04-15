@@ -253,49 +253,64 @@ function handleMouseDown(e) {
 function handleMouseMove(e) {
     const nodeElement = e.target;
     if (!nodeElement.classList.contains('node')) return;
+    
     dragged = true;
-    newX = startX - e.clientX;
-    newY = startY - e.clientY;
-
+    let deltaX = startX - e.clientX;
+    let deltaY = startY - e.clientY;
     startX = e.clientX;
     startY = e.clientY;
-
-    nodeElement.style.top = (nodeElement.offsetTop - newY) + 'px'
-    nodeElement.style.left = (nodeElement.offsetLeft - newX) + 'px'
-
-
-
-    // Update graph node position (assuming setPosition takes absolute coordinates)
+    
+    // Calculate potential new position
+    const potentialTop = nodeElement.offsetTop - deltaY;
+    const potentialLeft = nodeElement.offsetLeft - deltaX;
+    
+    // Get canvas boundaries
+    const canvas = document.getElementById('canvas'); // Remove the # symbol
+    const canvasBounds = canvas.getBoundingClientRect();
+    
+    // Node dimensions
+    const nodeWidth = nodeElement.offsetWidth;
+    const nodeHeight = nodeElement.offsetHeight;
+    
+    // Calculate bounds, keeping the node entirely within the canvas
+    const minLeft = 0;
+    const maxLeft = canvasBounds.width - nodeWidth;
+    const minTop = 0;
+    const maxTop = canvasBounds.height - nodeHeight;
+    
+    // Apply bounds checking
+    const newTop = Math.max(minTop, Math.min(maxTop, potentialTop));
+    const newLeft = Math.max(minLeft, Math.min(maxLeft, potentialLeft));
+    
+    // Update node position with bounded values
+    nodeElement.style.top = newTop + 'px';
+    nodeElement.style.left = newLeft + 'px';
+    
+    // Update graph node position
     const node = graph.getNode(nodeElement.id);
     if (node) {
-        const newPosX = nodeElement.offsetLeft - newX; // Absolute position
-        const newPosY = nodeElement.offsetTop - newY;
-        node.setPosition(newPosX, newPosY);
-
-        const nodeEdges = graph.findNodeEdges(node.id)
-        nodeEdges.forEach(nodeEdge => {
-            // displayEdge(nodeEdge)
-            const edgeElement = document.getElementById(nodeEdge.id);
-            const { x1, x2, y1, y2 } = nodeEdge.getCoordinates();
-
-            if (edgeElement) {
-                edgeElement.setAttribute("x1", x1 + nodeWidth / 2);
-                edgeElement.setAttribute("y1", y1 + nodeHeight / 2);
-                edgeElement.setAttribute("x2", x2 + nodeWidth / 2);
-                edgeElement.setAttribute("y2", y2 + nodeHeight / 2);
-            }
-
-            displayEdgeWeight(x1 + nodeWidth / 2, x2 + nodeWidth / 2, y1 + nodeHeight / 2, y2 + nodeHeight / 2, nodeEdge)
-
-        })
-
-        const nodeDistanceElement = document.getElementById(nodeElement.id + "nodeDistance")
-        if (nodeDistanceElement) {
-            nodeDistanceElement.style.top = node.yPos - 5 + 'px';
-            nodeDistanceElement.style.left = node.xPos - 5 + 'px';
+      node.setPosition(newLeft, newTop);
+      
+      const nodeEdges = graph.findNodeEdges(node.id);
+      nodeEdges.forEach(nodeEdge => {
+        const edgeElement = document.getElementById(nodeEdge.id);
+        const { x1, x2, y1, y2 } = nodeEdge.getCoordinates();
+        if (edgeElement) {
+          edgeElement.setAttribute("x1", x1 + nodeWidth / 2);
+          edgeElement.setAttribute("y1", y1 + nodeHeight / 2);
+          edgeElement.setAttribute("x2", x2 + nodeWidth / 2);
+          edgeElement.setAttribute("y2", y2 + nodeHeight / 2);
         }
+        displayEdgeWeight(x1 + nodeWidth / 2, x2 + nodeWidth / 2, y1 + nodeHeight / 2, y2 + nodeHeight / 2, nodeEdge);
+      });
+      
+      const nodeDistanceElement = document.getElementById(nodeElement.id + "nodeDistance");
+      if (nodeDistanceElement) {
+        nodeDistanceElement.style.top = (node.yPos - 5) + 'px';
+        nodeDistanceElement.style.left = (node.xPos - 5) + 'px';
+      }
     }
-}
+  }
 
 function handleMouseUp(e) {
     const nodeElement = e.target;
