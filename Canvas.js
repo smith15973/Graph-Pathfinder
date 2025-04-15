@@ -3,7 +3,7 @@ import { Graph, Node, Edge } from "./Graph.js";
 let numNodes = 0;
 let newX = 0, newY = 0, startX = 0, startY = 0;
 let dragged = false;
-const newEdge = { source: null, target: null }
+let newEdge = { source: null, target: null }
 const canvas = document.querySelector("#canvas");
 const lineCanvas = document.querySelector("#lineCanvas");
 const calculateShortestPathButton = document.querySelector("#calculateShortestPathButton");
@@ -27,7 +27,15 @@ calculateShortestPathButton.addEventListener('click', (event) => {
 
 canvas.addEventListener('click', (event) => {
     if (event.target !== canvas) return;
-    createNode(event.layerX, event.layerY);
+    
+    // Get canvas position relative to the viewport
+    const canvasRect = canvas.getBoundingClientRect();
+    
+    // Calculate click position relative to the canvas
+    const x = event.clientX - canvasRect.left;
+    const y = event.clientY - canvasRect.top;
+    
+    createNode(x, y);
 })
 
 sourceSelect.addEventListener('change', (event) => displayGraph())
@@ -102,6 +110,8 @@ function handleNodeClick(event) {
 
 
 function displayGraph() {
+    // reset newEdge on any graph redisplay
+    newEdge = { source: null, target: null }
     document.querySelectorAll('.node').forEach(node => node.remove());
     document.querySelectorAll('.nodeDistance').forEach(nodeDistance => nodeDistance.remove());
     document.querySelectorAll('.edge').forEach(edge => edge.remove());
