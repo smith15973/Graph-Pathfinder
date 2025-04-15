@@ -16,7 +16,7 @@
             display: flex;
             flex-direction: column;
             align-items: center;
-            height: 100vh;
+            /* height: 100vh; */
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
             background-color: #f5f7fa;
             padding: 20px;
@@ -76,7 +76,7 @@
         #canvas {
             border: 2px solid #34495e;
             border-radius: 10px;
-            width: 600px;
+            width: 100%;
             height: 600px;
             position: relative;
             background-color: white;
@@ -90,6 +90,7 @@
             padding: 15px 20px;
             border-radius: 8px;
             list-style-position: inside;
+            margin-bottom: 20px;
         }
 
         .instructions li {
@@ -219,6 +220,16 @@
         <p>Create and analyze shortest paths in a graph</p>
     </div>
 
+    <ol class="instructions">
+        <li>Click on the canvas to add vertices.</li>
+        <li>Connect vertices by clicking two vertices in sequence. Unselect a vertex by clicking it again. Click and
+            drag vertices to move them.</li>
+        <li>Edit edge weight by clicking the value and typing a new number.</li>
+        <li>Select the start and end vertices from the dropdowns above.</li>
+        <li>Click "Calculate Path" to find the shortest path.</li>
+        <li>Right-click a vertex to delete it. Remove an edge by deleting its weight value.</li>
+    </ol>
+
     <div class="controls">
         <select name="sourceSelect" id="sourceSelect">
             <option value="" disabled selected>Select source</option>
@@ -235,14 +246,7 @@
             style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none;"></svg>
     </div>
 
-    <ol class="instructions">
-        <li>Click on the canvas to add vertices.</li>
-        <li>Connect vertices by clicking two vertices in sequence. Unselect a vertex by clicking it again.</li>
-        <li>Edit edge weight by clicking the value and typing a new number.</li>
-        <li>Select the start and end vertices from the dropdowns above.</li>
-        <li>Click "Calculate Path" to find the shortest path.</li>
-        <li>Right-click a vertex to delete it. Remove an edge by deleting its weight value.</li>
-    </ol>
+
 
 
     <script type="module" src="Canvas.js"></script>
