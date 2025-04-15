@@ -1,7 +1,9 @@
 import { Graph, Node, Edge } from "./Graph.js";
 
 let numNodes = 0;
-const edge = { source: 0, target: 0 }
+let newX = 0, newY = 0, startX = 0, startY = 0;
+let dragged = false;
+const newEdge = { source: null, target: null }
 const canvas = document.querySelector("#canvas");
 const lineCanvas = document.querySelector("#lineCanvas");
 const calculateShortestPathButton = document.querySelector("#calculateShortestPathButton");
@@ -76,20 +78,21 @@ function createEdge(source, target, weight = 1) {
 }
 
 function handleNodeClick(event) {
-    const node = event.currentTarget;
+    const node = event.target;
     event.stopPropagation()
     if (event.button === 0) {
-        if (edge.source === 0) {
+        if (newEdge.source === null) {
             node.classList.add('selected');
-            edge.source = node.id;
-        } else if (node.id === edge.source) {
+            newEdge.source = graph.findNode(node.id);
+        } else if (node.id === newEdge.source.id) {
             node.classList.remove('selected');
-            edge.source = 0;
+            newEdge.source = null;
         } else {
-            createEdge(edge.source, node.id);
+            newEdge.target = graph.findNode(node.id);
+            createEdge(newEdge.source, newEdge.target);
             node.classList.remove('selected');
-            edge.source = 0;
-            edge.target = 0;
+            newEdge.source = null;
+            newEdge.target = null;
         }
 
     } else if (event.button === 2) {
@@ -117,14 +120,21 @@ function displayNode(node) {
     nodeElement.style.width = nodeWidth + 'px';
     nodeElement.style.fontSize = primaryFontSize + 'px';
     nodeElement.innerHTML = node.id;
-    nodeElement.addEventListener('mousedown', (event => handleNodeClick(event)));
+    // nodeElement.addEventListener('mousedown', (event => handleNodeClick(event)));
     nodeElement.addEventListener('contextmenu', e => e.preventDefault());
+    nodeElement.addEventListener('mousedown', handleMouseDown);
     canvas.appendChild(nodeElement);
 }
 
 function displayEdge(edge) {
-    const sourceNode = graph.nodes.find(node => node.id === edge.sourceNodeId);
-    const targetNode = graph.nodes.find(node => node.id === edge.targetNodeId);
+    const oldEdge = document.getElementById(edge.id)
+    if (oldEdge) {
+        oldEdge.remove();
+        document.getElementById(`weight-${edge.id}`).remove()
+    }
+
+    const sourceNode = edge.sourceNode;
+    const targetNode = edge.targetNode;
 
     const x1 = sourceNode.xPos + nodeWidth / 2;
     const y1 = sourceNode.yPos + nodeHeight / 2;
@@ -150,7 +160,7 @@ function displayEdge(edge) {
 
 
 function displayEdgeWeight(x1, x2, y1, y2, edge) {
-    const edgeWeight = document.createElement('input');
+    const edgeWeight = document.getElementById('weight-' + edge.id) || document.createElement('input');
     edgeWeight.type = 'number'
     edgeWeight.className = 'edge-weight';
     edgeWeight.value = edge.weight;
@@ -171,7 +181,7 @@ function displayEdgeWeight(x1, x2, y1, y2, edge) {
             graph.deleteEdge(edge);
         } else if (edge.getWeight().toString() !== event.target.value) {
             edge.setWeight(event.target.value);
-            
+
         }
         displayGraph()
     })
@@ -223,3 +233,77 @@ function calculateFontSize(width, height, baseFontSize) {
     return Math.max(8, Math.min(fontSize, 48));
 }
 
+
+const cards = document.querySelectorAll('.card')
+
+cards.forEach(card => card.addEventListener('mousedown', handleMouseDown));
+
+function handleMouseDown(e) {
+    e.preventDefault();
+    const nodeElement = e.currentTarget;
+    nodeElement.style.zIndex = 1000;
+
+    startX = e.clientX
+    startY = e.clientY
+
+    document.addEventListener('mousemove', handleMouseMove);
+    document.addEventListener('mouseup', handleMouseUp);
+}
+
+function handleMouseMove(e) {
+    const nodeElement = e.target;
+    if (!nodeElement.classList.contains('node')) return;
+    dragged = true;
+    newX = startX - e.clientX;
+    newY = startY - e.clientY;
+
+    startX = e.clientX;
+    startY = e.clientY;
+
+    nodeElement.style.top = (nodeElement.offsetTop - newY) + 'px'
+    nodeElement.style.left = (nodeElement.offsetLeft - newX) + 'px'
+
+
+
+    // Update graph node position (assuming setPosition takes absolute coordinates)
+    const node = graph.getNode(nodeElement.id);
+    if (node) {
+        const newPosX = nodeElement.offsetLeft - newX; // Absolute position
+        const newPosY = nodeElement.offsetTop - newY;
+        node.setPosition(newPosX, newPosY);
+
+        const nodeEdges = graph.findNodeEdges(node.id)
+        nodeEdges.forEach(nodeEdge => {
+            // displayEdge(nodeEdge)
+            const edgeElement = document.getElementById(nodeEdge.id);
+            const { x1, x2, y1, y2 } = nodeEdge.getCoordinates();
+
+            if (edgeElement) {
+                edgeElement.setAttribute("x1", x1 + nodeWidth / 2);
+                edgeElement.setAttribute("y1", y1 + nodeHeight / 2);
+                edgeElement.setAttribute("x2", x2 + nodeWidth / 2);
+                edgeElement.setAttribute("y2", y2 + nodeHeight / 2);
+            }
+
+            displayEdgeWeight(x1 + nodeWidth / 2, x2 + nodeWidth / 2, y1 + nodeHeight / 2, y2 + nodeHeight / 2, nodeEdge)
+
+        })
+
+        const nodeDistanceElement = document.getElementById(nodeElement.id + "nodeDistance")
+        if (nodeDistanceElement) {
+            nodeDistanceElement.style.top = node.yPos - 5 + 'px';
+            nodeDistanceElement.style.left = node.xPos - 5 + 'px';
+        }
+    }
+}
+
+function handleMouseUp(e) {
+    const nodeElement = e.target;
+    nodeElement.style.zIndex = '';
+    document.removeEventListener('mousemove', handleMouseMove);
+    document.removeEventListener('mouseup', handleMouseUp);
+    if (!dragged) {
+        handleNodeClick(e)
+    }
+    dragged = false;
+}

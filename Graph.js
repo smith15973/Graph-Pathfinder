@@ -17,8 +17,8 @@ export class Graph {
         // check if edge already exists
         const existingEdge = this.edges.find(existingEdge => {
             return (
-                (existingEdge.sourceNodeId === edge.sourceNodeId && existingEdge.targetNodeId === edge.targetNodeId) ||
-                (existingEdge.sourceNodeId === edge.targetNodeId && existingEdge.targetNodeId === edge.sourceNodeId)
+                (existingEdge.sourceNode.id === edge.sourceNode.id && existingEdge.targetNode.id === edge.targetNode.id) ||
+                (existingEdge.sourceNode.id === edge.targetNode.id && existingEdge.targetNode.id === edge.sourceNode.id)
             )
         })
         if (existingEdge) {
@@ -30,11 +30,11 @@ export class Graph {
     }
 
     deleteEdge(dEdge) {
-        this.edges = this.edges.filter(edge => !(edge.sourceNodeId === dEdge.sourceNodeId && edge.targetNodeId === dEdge.targetNodeId))
+        this.edges = this.edges.filter(edge => !(edge.sourceNode.id === dEdge.sourceNode.id && edge.targetNode.id === dEdge.targetNode.id))
     }
 
     deleteNode(id) {
-        this.edges = this.edges.filter(edge => edge.sourceNodeId !== id && edge.targetNodeId !== id)
+        this.edges = this.edges.filter(edge => edge.sourceNode.id !== id && edge.targetNode.id !== id)
         this.nodes = this.nodes.filter(node => node.id !== id);
     }
 
@@ -56,7 +56,7 @@ export class Graph {
 
             processedVertices.forEach(vertice => {
                 //find edge
-                const edges = unprocessedEdges.filter(edge => edge.sourceNodeId === vertice.id || edge.targetNodeId === vertice.id);
+                const edges = unprocessedEdges.filter(edge => edge.sourceNode.id === vertice.id || edge.targetNode.id === vertice.id);
 
                 edges.forEach(edge => {
                     const pathWeight = vertice.cost + edge.weight;
@@ -64,7 +64,7 @@ export class Graph {
                     if (!shortestEdge.source || pathWeight < shortestEdge.pathWeight) { //if found new shortest path
                         shortestEdge = {
                             source: vertice,
-                            target: edge.sourceNodeId === vertice.id ? this.findNode(edge.targetNodeId) : this.findNode(edge.sourceNodeId),
+                            target: edge.sourceNode.id === vertice.id ? this.findNode(edge.targetNode.id) : this.findNode(edge.sourceNode.id),
                             pathWeight: vertice.cost + edge.weight,
                             edge: edge
                         }
@@ -93,15 +93,15 @@ export class Graph {
     }
 
     findEdges(node) {
-        const edges = this.edges.filter(edge => edge.sourceNodeId === node.id || edge.targetNodeId === node.id);
+        const edges = this.edges.filter(edge => edge.sourceNode.id === node.id || edge.targetNode.id === node.id);
         return edges;
     }
 
     findEdge(source, target) {
         const existingEdge = this.edges.find(existingEdge => {
             return (
-                (existingEdge.sourceNodeId === source && existingEdge.targetNodeId === target.id) ||
-                (existingEdge.sourceNodeId === target.id && existingEdge.targetNodeId === source.id)
+                (existingEdge.sourceNode.id === source && existingEdge.targetNode.id === target.id) ||
+                (existingEdge.sourceNode.id === target.id && existingEdge.targetNode.id === source.id)
             )
         })
         return existingEdge;
@@ -110,7 +110,7 @@ export class Graph {
     hasMoreConnections(processedVertices, unprocessedEdges) {
         let hasMoreConnections = false;
         processedVertices.forEach(pVertice => {
-            const edges = unprocessedEdges.filter(edge => edge.sourceNodeId === pVertice.id || edge.targetNodeId === pVertice.id);
+            const edges = unprocessedEdges.filter(edge => edge.sourceNode.id === pVertice.id || edge.targetNode.id === pVertice.id);
             if (edges.length > 0) {
                 hasMoreConnections = true;
                 return true;
@@ -131,6 +131,10 @@ export class Graph {
     reset() {
         this.nodes = [];
         this.edges = [];
+    }
+
+    findNodeEdges(id) {
+        return this.edges.filter(edge => edge.sourceNode.id === id || edge.targetNode.id === id)
     }
 
 }
@@ -154,7 +158,7 @@ export class Node {
     }
 
     setId(id) {
-        this.id = id;
+        this.id = `${id}`;
     }
 
     getId() {
@@ -174,18 +178,18 @@ export class Node {
     }
 
     getParent() {
-        return this.parent
+        return this.parent;
     }
 
 }
 
 export class Edge {
-    constructor(sourceNodeId, targetNodeId, weight = 1, directed = false) {
-        this.sourceNodeId = sourceNodeId;
-        this.targetNodeId = targetNodeId;
+    constructor(sourceNode, targetNode, weight = 1, directed = false) {
+        this.sourceNode = sourceNode;
+        this.targetNode = targetNode;
         this.weight = weight;
-        this.directed = false;
-        this.id = `${this.sourceNodeId}-to-${this.targetNodeId}`
+        this.directed = directed;
+        this.id = `${this.sourceNode.id}-to-${this.targetNode.id}`
     }
 
     setWeight(weight) {
@@ -196,8 +200,9 @@ export class Edge {
         return this.weight
     }
 
-    // getCoordinates() {
-    // }
+    getCoordinates() {
+        return { x1: this.sourceNode.xPos, y1: this.sourceNode.yPos, x2: this.targetNode.xPos, y2: this.targetNode.yPos }
+    }
 
 
 }
