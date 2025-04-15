@@ -243,11 +243,6 @@ function calculateFontSize(width, height, baseFontSize) {
     return Math.max(8, Math.min(fontSize, 48));
 }
 
-
-const cards = document.querySelectorAll('.card')
-
-cards.forEach(card => card.addEventListener('mousedown', handleMouseDown));
-
 function handleMouseDown(e) {
     e.preventDefault();
     const nodeElement = e.currentTarget;
