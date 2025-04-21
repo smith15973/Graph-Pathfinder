@@ -466,7 +466,7 @@ describe('RedBlackTree', () => {
       tree.insertNode(node);
 
       expect(tree.root).toBe(node);
-      expect(node.getColor()).toBe('red'); // Initial color is red, but fixup might change it
+      expect(node.getColor()).toBe('black'); // Initial color is red, but fixup might change it
       expect(node.getLeftChild()).toBeNull();
       expect(node.getRightChild()).toBeNull();
     });

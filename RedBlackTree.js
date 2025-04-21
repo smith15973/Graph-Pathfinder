@@ -67,16 +67,16 @@ class RedBlackTree {
         const grandparent = parent.getParent();
         if (node === parent.getRightChild() && parent === grandparent.getLeftChild()) {
             node = parent;
-            this.leftRotate(grandparent);
+            this.leftRotate(parent);
         } else if (node === parent.getLeftChild() && parent === grandparent.getRightChild()) {
             node = parent;
-            this.rightRotate(grandparent);
+            this.rightRotate(parent);
         }
     }
      */
 
     insertFixupC(node) {
-        if (node === this.root && node.getParent().getColor() === 'black') {
+        if (node === this.root || node.getParent().getColor() === 'black') {
             return;
         }
         const parent = node.getParent();
@@ -96,6 +96,7 @@ class RedBlackTree {
         this.insertFixupA(node)
         this.insertFixupB(node)
         this.insertFixupC(node)
+        this.root.setColor('black');
     }
 
     leftRotate(node) {
