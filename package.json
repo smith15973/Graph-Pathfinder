@@ -1,0 +1,24 @@
+{
+  "name": "graph-pathfinder",
+  "version": "1.0.0",
+  "main": "Canvas.js",
+  "scripts": {
+    "test": "jest",
+    "test:debug": "node --inspect-brk node_modules/.bin/jest --runInBand"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/smith15973/Graph-Pathfinder.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/smith15973/Graph-Pathfinder/issues"
+  },
+  "homepage": "https://github.com/smith15973/Graph-Pathfinder#readme",
+  "description": "",
+  "devDependencies": {
+    "jest": "^29.7.0"
+  }
+}

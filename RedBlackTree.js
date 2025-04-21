@@ -6,7 +6,7 @@ class RedBlackTree {
     locateParent(node) {
         let parent = null;
         let traversalNode = this.root;
-        while (!traversalNode.isLeaf()) {
+        while (traversalNode !== null) {
             parent = traversalNode;
             if (node.value < traversalNode.value) {
                 traversalNode = traversalNode.getLeftChild();
@@ -25,8 +25,122 @@ class RedBlackTree {
         return parent.getLeftChild() === node ? parent.getRightChild() : parent.getLeftChild();
     }
 
-    insertFixup(node) {
+    insertFixupA(node) {
+        while (node !== this.root && node.getParent().getColor() !== 'black') {
+            const parentSibling = this.getSibling(node.getParent());
+            if (parentSibling.getColor() === 'black') return;
+            node.getParent().setColor('black');
+            parentSibling.setColor('black');
+            node = node.getParent().getParent();
+            node.setColor('red');
+        }
+    }
 
+    insertFixupB(node) {
+        if (node === this.root || node.getParent() === null) return;
+        if (node.getParent().getColor() === 'black') return;
+        
+        const parent = node.getParent();
+        const grandparent = parent.getParent();
+        if (!grandparent) return; // Handle case when there's no grandparent
+        
+        // Case: node is outer grandchild - no rotation needed here
+        
+        // Case: node is inner grandchild - needs rotation to make it outer
+        if (node === parent.getRightChild() && parent === grandparent.getLeftChild()) {
+            this.leftRotate(parent);
+            // Now the old parent is the child of node
+            // For fixupC to work correctly, we return the original parent
+            // return parent;
+        } else if (node === parent.getLeftChild() && parent === grandparent.getRightChild()) {
+            this.rightRotate(parent);
+            // Same logic as above
+            // return parent;
+        }
+        
+        // return node; // Return the original node if no changes were made
+    }
+    /*
+    insertFixupB(node) {
+        if (node === this.root && node.getParent().getColor() === 'black') return;
+        const parent = node.getParent();
+        const grandparent = parent.getParent();
+        if (node === parent.getRightChild() && parent === grandparent.getLeftChild()) {
+            node = parent;
+            this.leftRotate(grandparent);
+        } else if (node === parent.getLeftChild() && parent === grandparent.getRightChild()) {
+            node = parent;
+            this.rightRotate(grandparent);
+        }
+    }
+     */
+
+    insertFixupC(node) {
+        if (node === this.root && node.getParent().getColor() === 'black') {
+            return;
+        }
+        const parent = node.getParent();
+        const grandparent = parent.getParent();
+        if (node === parent.getLeftChild() && parent === grandparent.getLeftChild()) {
+            this.rightRotate(grandparent);
+            parent.setColor('black');
+            grandparent.setColor('red');
+        } else if (node === parent.getRightChild() && parent === grandparent.getRightChild()) {
+            this.leftRotate(grandparent);
+            parent.setColor('black');
+            grandparent.setColor('red');
+        }
+    }
+
+    insertFixup(node) {
+        this.insertFixupA(node)
+        this.insertFixupB(node)
+        this.insertFixupC(node)
+    }
+
+    leftRotate(node) {
+        const parent = node.getParent();
+        const rightChild = node.getRightChild();
+
+        //change parent child
+        if (parent) {
+            parent.getLeftChild() === node ? parent.setLeftChild(rightChild) : parent.setRightChild(rightChild);
+        }
+
+        //set right child to the parent
+        rightChild.setParent(parent);
+
+        //set the rotated node's right child to be the left node of its current right
+        node.setRightChild(rightChild.getLeftChild());
+
+        //set rotated node's parent to its right child
+        node.setParent(rightChild);
+
+        //set the right childs left child to be the original rotated node
+        rightChild.setLeftChild(node);
+
+    }
+
+    rightRotate(node) {
+        const parent = node.getParent();
+        const leftChild = node.getLeftChild();
+
+        //change parent child
+        if (parent) {
+            parent.getRightChild() === node ? parent.setRightChild(leftChild) : parent.setLeftChild(leftChild);
+        }
+
+        //set left child to the parent
+        leftChild.setParent(parent);
+
+        //set the rotated node's left child to be the right node of its current left
+        node.setLeftChild(leftChild.getRightChild());
+
+        //set rotated node's parent to its left child
+        node.setParent(leftChild);
+
+        //set the right childs left child to be the original rotated node
+        leftChild.setRightChild(node);
     }
 
     insertNode(node) {
@@ -125,3 +239,5 @@ class RedBlackNode {
         this.parent = parent;
     }
 }
+
+module.exports = { RedBlackNode, RedBlackTree };
