@@ -7,6 +7,10 @@ class RedBlackTree {
         return this.root;
     }
 
+    reset() {
+        this.root = null;
+    }
+
     locateParent(node) {
         let parent = null;
         let traversalNode = this.root;
