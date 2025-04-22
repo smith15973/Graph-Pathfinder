@@ -18,7 +18,7 @@ const primaryFontSize = calculateFontSize(nodeWidth, nodeHeight, 8)
 
 
 insertValueButton.addEventListener('click', (event) => {
-    const value = parseInt(valueInput.value);
+    const value = parseFloat(valueInput.value);
     valueInput.value = '';
     createNode(value);
 })
@@ -35,7 +35,7 @@ function createNode(value) {
     const node = new RedBlackNode(value);
     rbTree.insertNode(node);
     console.log(rbTree);
-    displayTree(rbTree.getRoot(), 0);
+    displayTree(rbTree.getRoot(), 0, 0, null);
 }
 
 // function deleteNode(id) {
@@ -74,37 +74,29 @@ function createNode(value) {
 // }
 
 
-function displayTree(node, level, direction) {
+function displayTree(node, level, left, direction) {
     if (node === rbTree.getRoot()) {
         document.querySelectorAll('.node').forEach(node => node.remove());
         document.querySelectorAll('.edge').forEach(edge => edge.remove());
     }
 
-
-
     if (node !== null) {
-        displayNode(node, level, direction)
-        displayTree(node.getLeftChild(), level + 1, 'left');
-        displayTree(node.getRightChild(), level + 1, 'right');
+        displayNode(node, level, left, direction)
+
+        // Dynamically adjust horizontal spacing based on level
+        const horizontalSpacing = 100 / Math.pow(2, level); // Decrease spacing as level increases
+        displayTree(node.getLeftChild(), level + 1, left - horizontalSpacing, 'left');
+        displayTree(node.getRightChild(), level + 1, left + horizontalSpacing, 'right');
     }
-
-
-
-
-    // graph.edges.forEach(edge => displayEdge(edge));
 }
 
-function displayNode(node, level, direction) {
+function displayNode(node, level, left, direction) {
     const nodeElement = document.createElement('div');
     nodeElement.className = 'node';
     nodeElement.id = `${node.getValue()}`;
     nodeElement.style.backgroundColor = node.getColor();
     console.log(direction, level)
-    if (direction === 'left') {
-        nodeElement.style.left = `calc(50% - ${nodeWidth / 2}px - ${level * 50}px)`;
-    } else {
-        nodeElement.style.left = `calc(50% - ${nodeWidth / 2}px + ${level * 50}px)`;
-    }
+    nodeElement.style.left = `calc(50% - ${nodeWidth / 2}px + ${left}px)`;
     nodeElement.style.top = `calc(${nodeHeight / 2}px + ${level * 50}px)`;
     nodeElement.style.height = nodeHeight + 'px';
     nodeElement.style.width = nodeWidth + 'px';

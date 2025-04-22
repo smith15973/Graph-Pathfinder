@@ -10,8 +10,8 @@ describe('RedBlackNode', () => {
     const node = new RedBlackNode();
     expect(node.value).toBeNull();
     expect(node.color).toBeNull();
-    expect(node.leftChild).toBeNull();
-    expect(node.rightChild).toBeNull();
+    expect(node.getLeftChild()).toBeNull();
+    expect(node.getRightChild()).toBeNull();
     expect(node.parent).toBeNull();
   });
 
@@ -23,8 +23,8 @@ describe('RedBlackNode', () => {
 
     expect(node.value).toBe(7);
     expect(node.color).toBe('black');
-    expect(node.leftChild).toBe(leftChild);
-    expect(node.rightChild).toBe(rightChild);
+    expect(node.getLeftChild()).toBe(leftChild);
+    expect(node.getRightChild()).toBe(rightChild);
     expect(node.parent).toBe(parent);
   });
 
@@ -561,3 +561,126 @@ function createInvalidRedBlackTree() {
   // ...
   return tree;
 }
+
+
+describe('RedBlackTree Insertion Stress Tests', () => {
+  let tree;
+
+  beforeEach(() => {
+    tree = new RedBlackTree(); // Assumes RedBlackTree class exists
+  });
+
+  // Helper function to check if root is black
+  const isRootBlack = (tree) => {
+    return tree.root === null || tree.root.getColor() === 'black';
+  };
+
+  // Helper function to check if red nodes have black children
+  const hasValidRedNodes = (node) => {
+    if (node === null) return true;
+    if (node.getColor() === 'red') {
+      if (node.getLeftChild() && node.getLeftChild().getColor() === 'red') return false;
+      if (node.getRightChild() && node.getRightChild().getColor() === 'red') return false;
+    }
+    return hasValidRedNodes(node.getLeftChild()) && hasValidRedNodes(node.getRightChild());
+  };
+
+  // Helper function to check black height consistency
+  const checkBlackHeight = (node) => {
+    if (node === null) return 1; // Count black height including null leaf
+    const leftHeight = checkBlackHeight(node.getLeftChild());
+    const rightHeight = checkBlackHeight(node.getRightChild());
+    if (leftHeight === -1 || rightHeight === -1 || leftHeight !== rightHeight) {
+      return -1; // Invalid black height
+    }
+    return leftHeight + (node.getColor() === 'black' ? 1 : 0);
+  };
+
+  // Test 1: Sequential ascending insertions
+  test('maintains properties after ascending sequential insertions', () => {
+    const values = Array.from({ length: 20 }, (_, i) => i + 1); // 1 to 20
+    values.forEach(value => {
+      tree.insertNode(new RedBlackNode(value));
+    });
+
+    expect(isRootBlack(tree)).toBe(true);
+    expect(hasValidRedNodes(tree.root)).toBe(true);
+    expect(checkBlackHeight(tree.root)).not.toBe(-1); // Valid black height
+  });
+
+  // Test 2: Sequential descending insertions
+  test('maintains properties after descending sequential insertions', () => {
+    const values = Array.from({ length: 20 }, (_, i) => 20 - i); // 20 to 1
+    values.forEach(value => {
+      tree.insertNode(new RedBlackNode(value));
+    });
+
+    expect(isRootBlack(tree)).toBe(true);
+    expect(hasValidRedNodes(tree.root)).toBe(true);
+    expect(checkBlackHeight(tree.root)).not.toBe(-1);
+  });
+
+  // Test 3: Zig-zag pattern insertions to trigger complex rotations
+  test('maintains properties after zig-zag insertions', () => {
+    const values = [50, 25, 75, 12, 37, 62, 87, 6, 18, 31, 43, 56, 68, 81, 93];
+    values.forEach(value => {
+      tree.insertNode(new RedBlackNode(value));
+    });
+
+    expect(isRootBlack(tree)).toBe(true);
+    expect(hasValidRedNodes(tree.root)).toBe(true);
+    expect(checkBlackHeight(tree.root)).not.toBe(-1);
+  });
+
+  // Test 4: Large random dataset
+  test('maintains properties after large random insertions', () => {
+    const values = Array.from({ length: 100 }, () => Math.floor(Math.random() * 1000));
+    values.forEach(value => {
+      tree.insertNode(new RedBlackNode(value));
+    });
+
+    expect(isRootBlack(tree)).toBe(true);
+    expect(hasValidRedNodes(tree.root)).toBe(true);
+    expect(checkBlackHeight(tree.root)).not.toBe(-1);
+  });
+
+  // Test 5: Edge case with extreme values
+  test('maintains properties with extreme value insertions', () => {
+    const values = [
+      Number.MAX_SAFE_INTEGER,
+      Number.MIN_SAFE_INTEGER,
+      0,
+      -1000000,
+      1000000,
+      1,
+      -1
+    ];
+    values.forEach(value => {
+      tree.insertNode(new RedBlackNode(value));
+    });
+
+    expect(isRootBlack(tree)).toBe(true);
+    expect(hasValidRedNodes(tree.root)).toBe(true);
+    expect(checkBlackHeight(tree.root)).not.toBe(-1);
+  });
+
+  // Test 6: Insertions causing left-right and right-left rotations
+  test('maintains properties after insertions triggering complex rotations', () => {
+    const values = [10, 20, 15]; // Triggers right-left rotation
+    values.forEach(value => {
+      tree.insertNode(new RedBlackNode(value));
+    });
+
+    expect(isRootBlack(tree)).toBe(true);
+    expect(hasValidRedNodes(tree.root)).toBe(true);
+    expect(checkBlackHeight(tree.root)).not.toBe(-1);
+
+    // Add more to trigger left-right rotation
+    tree.insertNode(new RedBlackNode(5));
+    tree.insertNode(new RedBlackNode(7));
+
+    expect(isRootBlack(tree)).toBe(true);
+    expect(hasValidRedNodes(tree.root)).toBe(true);
+    expect(checkBlackHeight(tree.root)).not.toBe(-1);
+  });
+});
