@@ -3,6 +3,10 @@ class RedBlackTree {
         this.root = rootNode;
     }
 
+    getRoot() {
+        return this.root;
+    }
+
     locateParent(node) {
         let parent = null;
         let traversalNode = this.root;
@@ -39,13 +43,13 @@ class RedBlackTree {
     insertFixupB(node) {
         if (node === this.root || node.getParent() === null) return;
         if (node.getParent().getColor() === 'black') return;
-        
+
         const parent = node.getParent();
         const grandparent = parent.getParent();
         if (!grandparent) return; // Handle case when there's no grandparent
-        
+
         // Case: node is outer grandchild - no rotation needed here
-        
+
         // Case: node is inner grandchild - needs rotation to make it outer
         if (node === parent.getRightChild() && parent === grandparent.getLeftChild()) {
             this.leftRotate(parent);
@@ -57,7 +61,7 @@ class RedBlackTree {
             // Same logic as above
             // return parent;
         }
-        
+
         // return node; // Return the original node if no changes were made
     }
     /*
@@ -241,4 +245,11 @@ class RedBlackNode {
     }
 }
 
-module.exports = { RedBlackNode, RedBlackTree };
+// module.exports = { RedBlackNode, RedBlackTree };
+// Export for Node.js (CommonJS)
+// if (typeof module !== 'undefined' && typeof module.exports !== 'undefined') {
+    // module.exports = { RedBlackNode, RedBlackTree };
+// }
+
+// Export for browsers (global scope)
+export { RedBlackNode, RedBlackTree };
