@@ -81,10 +81,29 @@ function displayTree(node, level, left, direction) {
     }
 
     if (node !== null) {
-        displayNode(node, level, left, direction)
+        displayNode(node, level, left, direction);
 
         // Dynamically adjust horizontal spacing based on level
         const horizontalSpacing = 100 / Math.pow(2, level); // Decrease spacing as level increases
+
+        // Calculate parent node position for edge drawing
+        const canvasWidth = canvas.offsetWidth;
+        const parentX = (canvasWidth / 2) + left;
+        const parentY = (nodeHeight) + (level * 50);
+
+        // Only draw edges to existing children
+        if (node.getLeftChild() !== null) {
+            const childX = (canvasWidth / 2) + (left - horizontalSpacing);
+            const childY = (nodeHeight) + ((level + 1) * 50);
+            displayEdge(parentX, parentY, childX, childY);
+        }
+
+        if (node.getRightChild() !== null) {
+            const childX = (canvasWidth / 2) + (left + horizontalSpacing);
+            const childY = (nodeHeight) + ((level + 1) * 50);
+            displayEdge(parentX, parentY, childX, childY);
+        }
+
         displayTree(node.getLeftChild(), level + 1, left - horizontalSpacing, 'left');
         displayTree(node.getRightChild(), level + 1, left + horizontalSpacing, 'right');
     }
@@ -95,51 +114,30 @@ function displayNode(node, level, left, direction) {
     nodeElement.className = 'node';
     nodeElement.id = `${node.getValue()}`;
     nodeElement.style.backgroundColor = node.getColor();
-    console.log(direction, level)
-    nodeElement.style.left = `calc(50% - ${nodeWidth / 2}px + ${left}px)`;
-    nodeElement.style.top = `calc(${nodeHeight / 2}px + ${level * 50}px)`;
+
+    const leftStyle = `calc(50% - ${nodeWidth / 2}px + ${left}px)`
+    const topStyle = `calc(${nodeHeight / 2}px + ${level * 50}px)`
+    nodeElement.style.left = leftStyle;
+    nodeElement.style.top = topStyle;
     nodeElement.style.height = nodeHeight + 'px';
     nodeElement.style.width = nodeWidth + 'px';
     nodeElement.style.fontSize = primaryFontSize + 'px';
     nodeElement.innerHTML = node.getValue();
-    console.log(node)
-    // nodeElement.addEventListener('mousedown', (event => handleNodeClick(event)));
-    // nodeElement.addEventListener('contextmenu', e => e.preventDefault());
-    // nodeElement.addEventListener('mousedown', handleMouseDown);
+
     canvas.appendChild(nodeElement);
 }
 
-// function displayEdge(edge) {
-//     const oldEdge = document.getElementById(edge.id)
-//     if (oldEdge) {
-//         oldEdge.remove();
-//         document.getElementById(`weight-${edge.id}`).remove()
-//     }
-
-//     const sourceNode = edge.sourceNode;
-//     const targetNode = edge.targetNode;
-
-//     const x1 = sourceNode.xPos + nodeWidth / 2;
-//     const y1 = sourceNode.yPos + nodeHeight / 2;
-//     const x2 = targetNode.xPos + nodeWidth / 2;
-//     const y2 = targetNode.yPos + nodeHeight / 2;
-
-//     const line = document.createElementNS("http://www.w3.org/2000/svg", "line");
-//     line.classList.add('edge');
-//     line.id = edge.id;
-
-
-//     line.setAttribute("x1", x1);
-//     line.setAttribute("y1", y1);
-//     line.setAttribute("x2", x2);
-//     line.setAttribute("y2", y2);
-//     line.setAttribute("stroke", "black");
-//     line.setAttribute("stroke-width", "2");
-
-//     lineCanvas.appendChild(line);
-//     displayEdgeWeight(x1, x2, y1, y2, edge);
-
-// }
+function displayEdge(x1, y1, x2, y2) {
+    const edge = document.createElementNS("http://www.w3.org/2000/svg", "line");
+    edge.classList.add('edge');
+    edge.setAttribute("x1", x1);
+    edge.setAttribute("y1", y1);
+    edge.setAttribute("x2", x2);
+    edge.setAttribute("y2", y2);
+    edge.setAttribute("stroke", "black");
+    edge.setAttribute("stroke-width", "2");
+    lineCanvas.appendChild(edge);
+}
 
 
 
