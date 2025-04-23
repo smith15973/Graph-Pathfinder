@@ -522,7 +522,7 @@ describe('RedBlackTree', () => {
     });
   });
 
-  
+
 });
 
 
@@ -840,14 +840,14 @@ describe('RedBlackTree Deletion Tests', () => {
   //   // Insert a bunch of values randomly
   //   const valuesToInsert = Array.from({ length: 50 }, () => Math.floor(Math.random() * 1000));
   //   const uniqueValues = [...new Set(valuesToInsert)]; // Remove duplicates
-    
+
   //   uniqueValues.forEach(value => {
   //     tree.insertNode(new RedBlackNode(value));
   //   });
 
   //   // Delete half of the values randomly
   //   const valuesToDelete = uniqueValues.slice(0, Math.floor(uniqueValues.length / 2));
-    
+
   //   valuesToDelete.forEach(value => {
   //     tree.deleteNode(value);
   //     expect(tree.findNode(value)).toBeNull();
@@ -869,13 +869,13 @@ describe('RedBlackTree Deletion Tests', () => {
   test('deleteNode should handle deleting the last node', () => {
     tree.insertNode(new RedBlackNode(10));
     tree.deleteNode(10);
-    
+
     expect(tree.root).toBeNull();
   });
 
   test('deleteNode should do nothing on empty tree', () => {
     const node = tree.deleteNode(10);
-    
+
     expect(node).toBeNull();
     expect(tree.root).toBeNull();
   });
@@ -885,30 +885,30 @@ describe('RedBlackTree Deletion Tests', () => {
     // Create a specific tree structure to test the sibling with red child case
     // This requires careful construction to create a predictable tree
     // where we can test the red sibling/nephew scenarios
-    
+
     // First, let's create a tree where deletion will lead to a black sibling
     // with a red outer nephew
     const values = [20, 10, 30, 5, 15, 25, 40, 27];
     values.forEach(value => {
       tree.insertNode(new RedBlackNode(value));
     });
-    
+
     // Verify initial structure
     expect(tree.findNode(20)).not.toBeNull();
     expect(tree.findNode(10)).not.toBeNull();
     expect(tree.findNode(5)).not.toBeNull();
-    
+
     // Delete a node that will trigger the case we want to test
     tree.deleteNode(5);
-    
+
     expect(tree.findNode(5)).toBeNull();
     expect(isRootBlack(tree)).toBe(true);
     expect(hasValidRedNodes(tree.root)).toBe(true);
     expect(checkBlackHeight(tree.root)).not.toBe(-1);
-    
+
     // Now delete another node to trigger inner nephew scenario
     tree.deleteNode(15);
-    
+
     expect(tree.findNode(15)).toBeNull();
     expect(isRootBlack(tree)).toBe(true);
     expect(hasValidRedNodes(tree.root)).toBe(true);
@@ -921,7 +921,7 @@ describe('RedBlackTree Deletion Tests', () => {
     values.forEach(value => {
       tree.insertNode(new RedBlackNode(value));
     });
-    
+
     // Delete in ascending order
     for (let i = 1; i <= 10; i++) {
       tree.deleteNode(i);
@@ -938,7 +938,7 @@ describe('RedBlackTree Deletion Tests', () => {
     values.forEach(value => {
       tree.insertNode(new RedBlackNode(value));
     });
-    
+
     // Delete in descending order
     for (let i = 20; i > 10; i--) {
       tree.deleteNode(i);

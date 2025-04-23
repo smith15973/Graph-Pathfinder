@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Data Structures Visualizations</title>
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #f5f7fa;
+            padding: 20px;
+            color: #333;
+        }
+
+        .header {
+            width: 100%;
+            margin-bottom: 20px;
+            text-align: center;
+        }
+
+        .header h1 {
+            margin-bottom: 10px;
+            color: #2c3e50;
+        }
+
+        .header p {
+            color: #7f8c8d;
+        }
+
+        .navigation {
+            display: flex;
+            gap: 15px;
+            margin-bottom: 20px;
+            width: 100%;
+            max-width: 600px;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+
+        .navigation a {
+            padding: 10px 20px;
+            border-radius: 5px;
+            background-color: #3498db;
+            color: white;
+            text-decoration: none;
+            font-size: 16px;
+            transition: background-color 0.3s;
+        }
+
+        .navigation a:hover {
+            background-color: #2980b9;
+        }
+
+        .content {
+            max-width: 600px;
+            background-color: #ecf0f1;
+            padding: 20px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            text-align: center;
+        }
+
+        .content p {
+            line-height: 1.6;
+            color: #34495e;
+        }
+
+        .footer {
+            width: 100%;
+            background-color: #34495e;
+            color: #ecf0f1;
+            padding: 15px 0;
+            text-align: center;
+            border-radius: 10px;
+            margin-top: 20px;
+        }
+
+        .footer-content {
+            max-width: 600px;
+            margin: 0 auto;
+        }
+
+        .footer p {
+            margin: 5px 0;
+            font-size: 16px;
+        }
+
+        .social-links {
+            margin-top: 10px;
+        }
+
+        .social-links a {
+            color: #3498db;
+            margin: 0 10px;
+            text-decoration: none;
+            transition: color 0.3s;
+        }
+
+        .social-links a:hover {
+            color: #2980b9;
+        }
+
+        @media (max-width: 650px) {
+            .navigation {
+                flex-direction: column;
+                align-items: center;
+            }
+
+            .navigation a {
+                width: 100%;
+                text-align: center;
+            }
+
+            .footer p {
+                font-size: 14px;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <div class="header">
+        <h1>Data Structures Visualizations</h1>
+        <p>Explore interactive visualizations of various data structures</p>
+    </div>
+
+    <div class="navigation">
+        <a href="/shortestPath/shortestPath.html">Shortest Path</a>
+        <a href="redBlackTree/redBlackTree.html">Red Black Tree</a>
+    </div>
+
+    <div class="content">
+        <p>Welcome to the Data Structures Visualizations page. Select a visualization above to explore and interact with different data structures, including shortest path algorithms and red black trees. Each visualization is designed to help you understand the underlying concepts through interactive controls and visual feedback.</p>
+    </div>
+
+    <footer class="footer">
+        <div class="footer-content">
+            <p>Designed and developed by Noah Smith © 2025</p>
+            <div class="social-links">
+                <a href="https://github.com/smith15973" target="_blank">GitHub</a>
+                <a href="https://linkedin.com/in/noah-smith-osu" target="_blank">LinkedIn</a>
+            </div>
+        </div>
+    </footer>
+</body>
+
+</html>

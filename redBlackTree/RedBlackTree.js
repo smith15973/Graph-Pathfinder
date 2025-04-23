@@ -619,7 +619,7 @@ class RedBlackNode {
 }
 
 // For running node jest tests
-module.exports = { RedBlackNode, RedBlackTree };
+// module.exports = { RedBlackNode, RedBlackTree };
 
 // // for browser user
-// export { RedBlackNode, RedBlackTree };
+export { RedBlackNode, RedBlackTree };
