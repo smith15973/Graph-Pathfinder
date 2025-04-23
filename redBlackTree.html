@@ -65,11 +65,11 @@
             background-color: #2980b9;
         }
 
-        #resetButton {
+        #resetButton, #removeNodeButton {
             background-color: #e74c3c;
         }
 
-        #resetButton:hover {
+        #resetButton:hover, #removeNodeButton:hover {
             background-color: #c0392b;
         }
 
@@ -264,12 +264,15 @@
     <div class="controls">
         <input type="number" name="valueInput" id="valueInput" placeholder="Enter Value">
         <button type="button" id="insertValueButton">Insert Value</button>
-        <button type="button" id="resetButton">Reset</button>
+        <button type="button" id="findNodeButton">Find Node</button>
+        <button type="button" id="removeNodeButton">Remove Node</button>
+        
     </div>
 
     <div class="controls">
         <input type="number" name="generateSizeInput" id="generateSizeInput" placeholder="Graph Size" value="30" max="100">
         <button type="button" id="generateGraphButton">Generate Graph</button>
+        <button type="button" id="resetButton">Reset</button>
     </div>
 
     <div id="canvas" oncontextmenu="return false;">

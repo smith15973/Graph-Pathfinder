@@ -5,7 +5,9 @@ import { RedBlackTree, RedBlackNode } from './RedBlackTree.js';
 
 const canvas = document.querySelector("#canvas");
 const lineCanvas = document.querySelector("#lineCanvas");
+const findNodeButton = document.querySelector("#findNodeButton");
 const insertValueButton = document.querySelector("#insertValueButton");
+const removeNodeButton = document.querySelector("#removeNodeButton");
 const valueInput = document.querySelector("#valueInput");
 const resetButton = document.querySelector("#resetButton");
 const generateGraphButton = document.querySelector("#generateGraphButton");
@@ -26,13 +28,21 @@ insertValueButton.addEventListener('click', (event) => {
     createNode(value);
 })
 
-canvas.addEventListener('click', (event) => {
+removeNodeButton.addEventListener('click', (event) => {
+    const value = parseFloat(valueInput.value);
+    valueInput.value = '';
+    deleteNode(value);
+})
 
+findNodeButton.addEventListener('click', (event) => {
+    document.querySelectorAll('.shortest').forEach(shortest => shortest.classList.remove('shortest'));
+    const value = parseFloat(valueInput.value);
+    findNode(value);
 })
 
 resetButton.addEventListener('click', (event) => {
     rbTree.reset();
-    displayTree(rbTree.getRoot());
+    displayTree(rbTree.getRoot(), 0, 0, null);
 })
 
 generateGraphButton.addEventListener('click', (event) => {
@@ -74,13 +84,15 @@ function displayTree(node, level, left) {
         if (node.getLeftChild() !== null) {
             const childX = (canvasWidth / 2) + (left - horizontalSpacing);
             const childY = (nodeHeight) + ((level + 1) * levelHeight);
-            displayEdge(parentX, parentY, childX, childY);
+            const edgeId = `${node.getLeftChild().getValue()}-to-${node.getValue()}`
+            displayEdge(parentX, parentY, childX, childY, edgeId);
         }
 
         if (node.getRightChild() !== null) {
             const childX = (canvasWidth / 2) + (left + horizontalSpacing);
             const childY = (nodeHeight) + ((level + 1) * levelHeight);
-            displayEdge(parentX, parentY, childX, childY);
+            const edgeId = `${node.getRightChild().getValue()}-to-${node.getValue()}`
+            displayEdge(parentX, parentY, childX, childY, edgeId);
         }
 
         displayTree(node.getLeftChild(), level + 1, left - horizontalSpacing);
@@ -88,7 +100,7 @@ function displayTree(node, level, left) {
     }
 }
 
-function displayNode(node, level, left) {
+function displayNode(node, level, left,) {
     const nodeElement = document.createElement('div');
     nodeElement.className = 'node';
     nodeElement.id = `${node.getValue()}`;
@@ -106,9 +118,10 @@ function displayNode(node, level, left) {
     canvas.appendChild(nodeElement);
 }
 
-function displayEdge(x1, y1, x2, y2) {
+function displayEdge(x1, y1, x2, y2, edgeId) {
     const edge = document.createElementNS("http://www.w3.org/2000/svg", "line");
     edge.classList.add('edge');
+    edge.id = edgeId;
     edge.setAttribute("x1", x1);
     edge.setAttribute("y1", y1);
     edge.setAttribute("x2", x2);
@@ -138,6 +151,26 @@ function generateRandomGraph(size = 50, min = 1, max = 100) {
     values.forEach(value => {
         createNode(value);
     });
+}
+
+function findNode(value) {
+    let traversalNode = rbTree.findNode(value);
+    while (traversalNode) {
+        const nodeElement = document.getElementById(traversalNode.getValue());
+        const parent = traversalNode.getParent();
+        if (parent) {
+            const edgeElement = document.getElementById(`${traversalNode.getValue()}-to-${parent.getValue()}`);
+            edgeElement.classList.add('shortest')
+        }
+        nodeElement.classList.add('shortest')
+        traversalNode = parent;
+    }
+
+}
+
+function deleteNode(value) {
+    rbTree.deleteNode(value);
+    displayTree(rbTree.getRoot(), 0, 0, null);
 }
 
 

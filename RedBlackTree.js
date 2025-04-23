@@ -179,19 +179,201 @@ class RedBlackTree {
         this.insertFixup(node);
     }
 
-    deleteNode() {
+    findNode(value) {
+        let traversalNode = this.root;
+        while (traversalNode && traversalNode.getValue() !== value) {
+            if (value < traversalNode.getValue()) {
+                traversalNode = traversalNode.getLeftChild();
+            } else {
+                traversalNode = traversalNode.getRightChild();
+            }
+        }
+        return traversalNode;
+    }
 
+    deleteNode(value) {
+        // Find the node to delete
+        const nodeToDelete = this.findNode(value);
+        if (!nodeToDelete) {
+            alert('Element does not Exist');
+            return;
+        }
+
+        // Save if the node to be deleted is black (will need fixing if true)
+        const isBlack = nodeToDelete.getColor() === 'black';
+
+        // Case 1: Node has two children
+        if (nodeToDelete.getLeftChild() && nodeToDelete.getRightChild()) {
+            // Find successor (smallest node in right subtree)
+            const successor = this.findMinimum(nodeToDelete.getRightChild());
+
+            // Copy successor value to the node
+            nodeToDelete.setValue(successor.getValue());
+
+            // We'll delete the successor node directly instead of recursing
+            this.removeNodeDirectly(successor);
+
+            // Fix Red-Black properties if successor was black
+            if (successor.getColor() === 'black') {
+                this.fixDoubleBlack(null, successor.getParent());
+            }
+        }
+        // Case 2: Node has at most one child
+        else {
+            this.removeNodeDirectly(nodeToDelete);
+
+            // Fix Red-Black properties if deleted node was black
+            if (isBlack) {
+                const replacement = nodeToDelete.getLeftChild() || nodeToDelete.getRightChild();
+                if (replacement && replacement.getColor() === 'red') {
+                    // Just color the replacement black and we're done
+                    replacement.setColor('black');
+                } else {
+                    this.fixDoubleBlack(replacement, nodeToDelete.getParent());
+                }
+            }
+        }
+
+        // Ensure root is black
+        if (this.root) {
+            this.root.setColor('black');
+        }
+    }
+
+    // Helper to directly remove a node without recursion
+    removeNodeDirectly(node) {
+        // Determine the replacement (child if any)
+        const replacement = node.getLeftChild() || node.getRightChild();
+
+        // Update parent pointers
+        if (node === this.root) {
+            this.root = replacement;
+            if (replacement) {
+                replacement.setParent(null);
+            }
+        } else {
+            const parent = node.getParent();
+            if (parent.getLeftChild() === node) {
+                parent.setLeftChild(replacement);
+            } else {
+                parent.setRightChild(replacement);
+            }
+
+            if (replacement) {
+                replacement.setParent(parent);
+            }
+        }
+    }
+
+    // Fix the "double black" problem in red-black trees
+    fixDoubleBlack(node, parent) {
+        if (!parent) return;
+
+        // Determine if node is left or right child
+        const isLeftChild = parent.getLeftChild() === node;
+        let sibling = isLeftChild ? parent.getRightChild() : parent.getLeftChild();
+
+        // Case 1: Sibling is RED
+        if (sibling && sibling.getColor() === 'red') {
+            parent.setColor('red');
+            sibling.setColor('black');
+
+            if (isLeftChild) {
+                this.leftRotate(parent);
+            } else {
+                this.rightRotate(parent);
+            }
+
+            // Update sibling after rotation
+            sibling = isLeftChild ? parent.getRightChild() : parent.getLeftChild();
+        }
+
+        // Case 2: Sibling is BLACK with two BLACK children
+        const leftNephewBlack = !sibling?.getLeftChild() || sibling.getLeftChild().getColor() === 'black';
+        const rightNephewBlack = !sibling?.getRightChild() || sibling.getRightChild().getColor() === 'black';
+
+        if (leftNephewBlack && rightNephewBlack) {
+            // Color sibling red
+            if (sibling) sibling.setColor('red');
+
+            // If parent is red, color it black and we're done
+            if (parent.getColor() === 'red') {
+                parent.setColor('black');
+            }
+            // If parent is black, it becomes double black, recurse upward
+            else {
+                this.fixDoubleBlack(parent, parent.getParent());
+            }
+            return;
+        }
+
+        // Case 3: Sibling is BLACK with at least one RED child
+        if (sibling) {
+            // Determine if red nephew is on the outer or inner side
+            const outerNephewRed = isLeftChild ?
+                (sibling.getRightChild() && sibling.getRightChild().getColor() === 'red') :
+                (sibling.getLeftChild() && sibling.getLeftChild().getColor() === 'red');
+
+            const innerNephewRed = isLeftChild ?
+                (sibling.getLeftChild() && sibling.getLeftChild().getColor() === 'red') :
+                (sibling.getRightChild() && sibling.getRightChild().getColor() === 'red');
+
+            // Case 3a: Outer nephew is RED
+            if (outerNephewRed) {
+                // Sibling gets parent's color
+                sibling.setColor(parent.getColor());
+                // Parent becomes black
+                parent.setColor('black');
+
+                // Outer nephew becomes black
+                if (isLeftChild) {
+                    if (sibling.getRightChild()) sibling.getRightChild().setColor('black');
+                    this.leftRotate(parent);
+                } else {
+                    if (sibling.getLeftChild()) sibling.getLeftChild().setColor('black');
+                    this.rightRotate(parent);
+                }
+            }
+            // Case 3b: Inner nephew is RED
+            else if (innerNephewRed) {
+                // Get the inner nephew
+                const innerNephew = isLeftChild ? sibling.getLeftChild() : sibling.getRightChild();
+
+                // Nephew gets parent's color
+                innerNephew.setColor(parent.getColor());
+                // Parent becomes black
+                parent.setColor('black');
+
+                // Double rotation
+                if (isLeftChild) {
+                    this.rightRotate(sibling);
+                    this.leftRotate(parent);
+                } else {
+                    this.leftRotate(sibling);
+                    this.rightRotate(parent);
+                }
+            }
+        }
     }
 
 
-    isvalidTree() {
-
+    // Find minimum value node in a subtree
+    findMinimum(node) {
+        let current = node;
+        while (current.getLeftChild()) {
+            current = current.getLeftChild();
+        }
+        return current;
     }
 
-
-
-
-
+    // Find maximum value node in a subtree
+    findMaximum(node) {
+        let current = node;
+        while (current.getRightChild()) {
+            current = current.getRightChild();
+        }
+        return current;
+    }
 }
 
 class RedBlackNode {
@@ -201,10 +383,6 @@ class RedBlackNode {
         this.leftChild = leftChild;
         this.rightChild = rightChild;
         this.parent = parent;
-    }
-
-    isLeaf() {
-        return this.leftChild === null && this.rightChild === null;
     }
 
     getLeftChild() {
