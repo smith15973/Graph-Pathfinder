@@ -195,8 +195,7 @@ class RedBlackTree {
         // Find the node to delete
         const nodeToDelete = this.findNode(value);
         if (!nodeToDelete) {
-            alert('Element does not Exist');
-            return;
+            return null
         }
 
         // Save if the node to be deleted is black (will need fixing if true)
@@ -238,6 +237,7 @@ class RedBlackTree {
         if (this.root) {
             this.root.setColor('black');
         }
+        return nodeToDelete
     }
 
     // Helper to directly remove a node without recursion
@@ -385,6 +385,10 @@ class RedBlackNode {
         this.parent = parent;
     }
 
+    isLeaf() {
+        return this.leftChild === null && this.rightChild === null;
+    }
+
     getLeftChild() {
         return this.leftChild;
     }
@@ -438,11 +442,6 @@ class RedBlackNode {
     }
 }
 
-// module.exports = { RedBlackNode, RedBlackTree };
-// Export for Node.js (CommonJS)
-// if (typeof module !== 'undefined' && typeof module.exports !== 'undefined') {
-// module.exports = { RedBlackNode, RedBlackTree };
-// }
+module.exports = { RedBlackNode, RedBlackTree };
 
-// Export for browsers (global scope)
-export { RedBlackNode, RedBlackTree };
+// export { RedBlackNode, RedBlackTree };

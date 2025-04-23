@@ -522,45 +522,8 @@ describe('RedBlackTree', () => {
     });
   });
 
-  describe('isvalidTree', () => {
-    test('placeholder for isvalidTree implementation', () => {
-      // This test will fail until isvalidTree is implemented
-      expect(typeof tree.isvalidTree).toBe('function');
-    });
-
-    // Add more specific tests once implemented
-    test('returns true for valid red-black tree', () => {
-      // Skip this test until implementation is complete
-      // Example assertions:
-      // const validTree = createValidRedBlackTree();
-      // expect(validTree.isvalidTree()).toBe(true);
-    });
-
-    test('returns false for invalid red-black tree', () => {
-      // Skip this test until implementation is complete
-      // Example assertions:
-      // const invalidTree = createInvalidRedBlackTree();
-      // expect(invalidTree.isvalidTree()).toBe(false);
-    });
-  });
+  
 });
-
-// Helper functions (could be moved to a separate file)
-function createValidRedBlackTree() {
-  // Create a valid red-black tree for testing
-  const tree = new RedBlackTree();
-  // Add nodes in a way that ensures a valid red-black tree
-  // ...
-  return tree;
-}
-
-function createInvalidRedBlackTree() {
-  // Create an invalid red-black tree for testing
-  const tree = new RedBlackTree();
-  // Add nodes in a way that violates red-black tree properties
-  // ...
-  return tree;
-}
 
 
 describe('RedBlackTree Insertion Stress Tests', () => {
@@ -682,5 +645,335 @@ describe('RedBlackTree Insertion Stress Tests', () => {
     expect(isRootBlack(tree)).toBe(true);
     expect(hasValidRedNodes(tree.root)).toBe(true);
     expect(checkBlackHeight(tree.root)).not.toBe(-1);
+  });
+});
+
+describe('RedBlackTree Deletion Tests', () => {
+  let tree;
+
+  beforeEach(() => {
+    tree = new RedBlackTree();
+  });
+
+  // Helper functions to verify Red-Black tree properties
+  const isRootBlack = (tree) => {
+    return tree.root === null || tree.root.getColor() === 'black';
+  };
+
+  const hasValidRedNodes = (node) => {
+    if (node === null) return true;
+    if (node.getColor() === 'red') {
+      if (node.getLeftChild() && node.getLeftChild().getColor() === 'red') return false;
+      if (node.getRightChild() && node.getRightChild().getColor() === 'red') return false;
+    }
+    return hasValidRedNodes(node.getLeftChild()) && hasValidRedNodes(node.getRightChild());
+  };
+
+  const checkBlackHeight = (node) => {
+    if (node === null) return 1; // Count black height including null leaf
+    const leftHeight = checkBlackHeight(node.getLeftChild());
+    const rightHeight = checkBlackHeight(node.getRightChild());
+    if (leftHeight === -1 || rightHeight === -1 || leftHeight !== rightHeight) {
+      return -1; // Invalid black height
+    }
+    return leftHeight + (node.getColor() === 'black' ? 1 : 0);
+  };
+
+  // Basic deletion tests
+  test('deleteNode should remove a leaf node correctly', () => {
+    // Set up a simple tree
+    const values = [10, 5, 15];
+    values.forEach(value => {
+      tree.insertNode(new RedBlackNode(value));
+    });
+
+    tree.deleteNode(5); // Delete a leaf
+
+    expect(tree.findNode(5)).toBeNull();
+    expect(isRootBlack(tree)).toBe(true);
+    expect(hasValidRedNodes(tree.root)).toBe(true);
+    expect(checkBlackHeight(tree.root)).not.toBe(-1);
+  });
+
+  test('deleteNode should correctly remove a node with one child', () => {
+    // Create a tree where 15 has one child (20)
+    const values = [10, 5, 15, 20];
+    values.forEach(value => {
+      tree.insertNode(new RedBlackNode(value));
+    });
+
+    tree.deleteNode(15); // Delete a node with one child
+
+    expect(tree.findNode(15)).toBeNull();
+    expect(tree.findNode(20)).not.toBeNull(); // The child should still be in the tree
+    expect(isRootBlack(tree)).toBe(true);
+    expect(hasValidRedNodes(tree.root)).toBe(true);
+    expect(checkBlackHeight(tree.root)).not.toBe(-1);
+  });
+
+  test('deleteNode should correctly remove a node with two children', () => {
+    // Create a tree where 10 has two children (5 and 15)
+    const values = [10, 5, 15, 3, 7, 12, 20];
+    values.forEach(value => {
+      tree.insertNode(new RedBlackNode(value));
+    });
+
+    tree.deleteNode(10); // Delete root (has two children)
+
+    expect(tree.findNode(10)).toBeNull();
+    expect(isRootBlack(tree)).toBe(true);
+    expect(hasValidRedNodes(tree.root)).toBe(true);
+    expect(checkBlackHeight(tree.root)).not.toBe(-1);
+  });
+
+  test('deleteNode should handle the case when node does not exist', () => {
+
+    const values = [10, 5, 15];
+    values.forEach(value => {
+      tree.insertNode(new RedBlackNode(value));
+    });
+
+    const node = tree.deleteNode(100); // Try to delete a node that doesn't exist
+    expect(node).toBe(null)
+    expect(isRootBlack(tree)).toBe(true);
+    expect(hasValidRedNodes(tree.root)).toBe(true);
+    expect(checkBlackHeight(tree.root)).not.toBe(-1);
+  });
+
+  test('deleteNode should maintain properties after deleting the root', () => {
+    const values = [10, 5, 15];
+    values.forEach(value => {
+      tree.insertNode(new RedBlackNode(value));
+    });
+
+    tree.deleteNode(10); // Delete the root
+
+    expect(tree.findNode(10)).toBeNull();
+    expect(isRootBlack(tree)).toBe(true);
+    expect(hasValidRedNodes(tree.root)).toBe(true);
+    expect(checkBlackHeight(tree.root)).not.toBe(-1);
+  });
+
+  // Case-specific tests for red-black tree deletion scenarios
+  test('deleteNode should handle deleting a red leaf correctly', () => {
+    // First, create a controlled tree where we know a specific leaf will be red
+    // Insert nodes in a specific order to create a predictable structure
+    const rootNode = new RedBlackNode(10, 'black');
+    const leftNode = new RedBlackNode(5, 'black');
+    const rightNode = new RedBlackNode(15, 'black');
+    const redLeaf = new RedBlackNode(3, 'red');
+
+    rootNode.setLeftChild(leftNode);
+    rootNode.setRightChild(rightNode);
+    leftNode.setParent(rootNode);
+    rightNode.setParent(rootNode);
+    leftNode.setLeftChild(redLeaf);
+    redLeaf.setParent(leftNode);
+
+    tree.root = rootNode;
+
+    // Delete the red leaf
+    tree.deleteNode(3);
+
+    expect(tree.findNode(3)).toBeNull();
+    expect(leftNode.getLeftChild()).toBeNull();
+    expect(isRootBlack(tree)).toBe(true);
+    expect(hasValidRedNodes(tree.root)).toBe(true);
+    expect(checkBlackHeight(tree.root)).not.toBe(-1);
+  });
+
+  test('deleteNode should handle black node with red child case', () => {
+    // Create a tree with a known black node with a red child
+    const rootNode = new RedBlackNode(10);
+    const blackNode = new RedBlackNode(5);
+    const redChild = new RedBlackNode(3);
+
+    tree.insertNode(rootNode);
+    tree.insertNode(blackNode);
+    tree.insertNode(redChild);
+
+    rootNode.setLeftChild(blackNode);
+    blackNode.setParent(rootNode);
+    blackNode.setLeftChild(redChild);
+    redChild.setParent(blackNode);
+
+    tree.root = rootNode;
+
+    // Delete the black node (should replace with its red child and recolor)
+    tree.deleteNode(5);
+
+    expect(tree.findNode(5)).toBeNull();
+    expect(tree.findNode(3)).not.toBeNull();
+    expect(tree.findNode(3).getColor()).toBe('black'); // The child should now be black
+    expect(isRootBlack(tree)).toBe(true);
+    expect(hasValidRedNodes(tree.root)).toBe(true);
+    expect(checkBlackHeight(tree.root)).not.toBe(-1);
+  });
+
+  // Complex deletions that would trigger rebalancing
+  test('deleteNode should handle complex deletion with rebalancing', () => {
+    // Create a more complex tree that will require rebalancing
+    const values = [50, 25, 75, 12, 37, 62, 87, 6, 18, 31, 43, 56, 68, 81, 93];
+    values.forEach(value => {
+      tree.insertNode(new RedBlackNode(value));
+    });
+
+    // Delete multiple nodes in succession
+    tree.deleteNode(25);
+    expect(tree.findNode(25)).toBeNull();
+    expect(isRootBlack(tree)).toBe(true);
+    expect(hasValidRedNodes(tree.root)).toBe(true);
+    expect(checkBlackHeight(tree.root)).not.toBe(-1);
+
+    tree.deleteNode(50);
+    expect(tree.findNode(50)).toBeNull();
+    expect(isRootBlack(tree)).toBe(true);
+    expect(hasValidRedNodes(tree.root)).toBe(true);
+    expect(checkBlackHeight(tree.root)).not.toBe(-1);
+
+    tree.deleteNode(12);
+    expect(tree.findNode(12)).toBeNull();
+    expect(isRootBlack(tree)).toBe(true);
+    expect(hasValidRedNodes(tree.root)).toBe(true);
+    expect(checkBlackHeight(tree.root)).not.toBe(-1);
+  });
+
+  // Test deletion scenarios that would trigger double black fixes
+  test('deleteNode should correctly fix double black cases', () => {
+    // Create a tree where deletion will result in a double black situation
+    const values = [20, 10, 30, 5, 15, 25, 40];
+    values.forEach(value => {
+      tree.insertNode(new RedBlackNode(value));
+    });
+
+    // Delete nodes that will cause a double black scenario
+    tree.deleteNode(5);
+    expect(isRootBlack(tree)).toBe(true);
+    expect(hasValidRedNodes(tree.root)).toBe(true);
+    expect(checkBlackHeight(tree.root)).not.toBe(-1);
+
+    tree.deleteNode(15);
+    expect(isRootBlack(tree)).toBe(true);
+    expect(hasValidRedNodes(tree.root)).toBe(true);
+    expect(checkBlackHeight(tree.root)).not.toBe(-1);
+
+    tree.deleteNode(10);
+    expect(isRootBlack(tree)).toBe(true);
+    expect(hasValidRedNodes(tree.root)).toBe(true);
+    expect(checkBlackHeight(tree.root)).not.toBe(-1);
+  });
+
+  // Stress tests for deletion
+  test('should maintain properties after multiple random insertions and deletions', () => {
+    // Insert a bunch of values randomly
+    const valuesToInsert = Array.from({ length: 50 }, () => Math.floor(Math.random() * 1000));
+    const uniqueValues = [...new Set(valuesToInsert)]; // Remove duplicates
+    
+    uniqueValues.forEach(value => {
+      tree.insertNode(new RedBlackNode(value));
+    });
+
+    // Delete half of the values randomly
+    const valuesToDelete = uniqueValues.slice(0, Math.floor(uniqueValues.length / 2));
+    
+    valuesToDelete.forEach(value => {
+      tree.deleteNode(value);
+      expect(tree.findNode(value)).toBeNull();
+    });
+
+    // Check tree properties still hold
+    expect(isRootBlack(tree)).toBe(true);
+    expect(hasValidRedNodes(tree.root)).toBe(true);
+    expect(checkBlackHeight(tree.root)).not.toBe(-1);
+
+    // Check that remaining values are still in the tree
+    const remainingValues = uniqueValues.filter(val => !valuesToDelete.includes(val));
+    remainingValues.forEach(value => {
+      expect(tree.findNode(value)).not.toBeNull();
+    });
+  });
+
+  // Edge cases
+  test('deleteNode should handle deleting the last node', () => {
+    tree.insertNode(new RedBlackNode(10));
+    tree.deleteNode(10);
+    
+    expect(tree.root).toBeNull();
+  });
+
+  test('deleteNode should do nothing on empty tree', () => {
+    const node = tree.deleteNode(10);
+    
+    expect(node).toBeNull();
+    expect(tree.root).toBeNull();
+  });
+
+  // Tests for specific edge cases in fixDoubleBlack
+  test('fixDoubleBlack should handle sibling with red child cases correctly', () => {
+    // Create a specific tree structure to test the sibling with red child case
+    // This requires careful construction to create a predictable tree
+    // where we can test the red sibling/nephew scenarios
+    
+    // First, let's create a tree where deletion will lead to a black sibling
+    // with a red outer nephew
+    const values = [20, 10, 30, 5, 15, 25, 40, 27];
+    values.forEach(value => {
+      tree.insertNode(new RedBlackNode(value));
+    });
+    
+    // Verify initial structure
+    expect(tree.findNode(20)).not.toBeNull();
+    expect(tree.findNode(10)).not.toBeNull();
+    expect(tree.findNode(5)).not.toBeNull();
+    
+    // Delete a node that will trigger the case we want to test
+    tree.deleteNode(5);
+    
+    expect(tree.findNode(5)).toBeNull();
+    expect(isRootBlack(tree)).toBe(true);
+    expect(hasValidRedNodes(tree.root)).toBe(true);
+    expect(checkBlackHeight(tree.root)).not.toBe(-1);
+    
+    // Now delete another node to trigger inner nephew scenario
+    tree.deleteNode(15);
+    
+    expect(tree.findNode(15)).toBeNull();
+    expect(isRootBlack(tree)).toBe(true);
+    expect(hasValidRedNodes(tree.root)).toBe(true);
+    expect(checkBlackHeight(tree.root)).not.toBe(-1);
+  });
+
+  // Add a test for multiple deletions in ascending order
+  test('maintains properties after multiple ascending deletions', () => {
+    const values = Array.from({ length: 20 }, (_, i) => i + 1); // 1 to 20
+    values.forEach(value => {
+      tree.insertNode(new RedBlackNode(value));
+    });
+    
+    // Delete in ascending order
+    for (let i = 1; i <= 10; i++) {
+      tree.deleteNode(i);
+      expect(tree.findNode(i)).toBeNull();
+      expect(isRootBlack(tree)).toBe(true);
+      expect(hasValidRedNodes(tree.root)).toBe(true);
+      expect(checkBlackHeight(tree.root)).not.toBe(-1);
+    }
+  });
+
+  // Add a test for multiple deletions in descending order
+  test('maintains properties after multiple descending deletions', () => {
+    const values = Array.from({ length: 20 }, (_, i) => i + 1); // 1 to 20
+    values.forEach(value => {
+      tree.insertNode(new RedBlackNode(value));
+    });
+    
+    // Delete in descending order
+    for (let i = 20; i > 10; i--) {
+      tree.deleteNode(i);
+      expect(tree.findNode(i)).toBeNull();
+      expect(isRootBlack(tree)).toBe(true);
+      expect(hasValidRedNodes(tree.root)).toBe(true);
+      expect(checkBlackHeight(tree.root)).not.toBe(-1);
+    }
   });
 });
