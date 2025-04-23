@@ -12,6 +12,7 @@ const valueInput = document.querySelector("#valueInput");
 const resetButton = document.querySelector("#resetButton");
 const generateGraphButton = document.querySelector("#generateGraphButton");
 const generateSizeInput = document.querySelector("#generateSizeInput");
+const verifiedTreeDisplay = document.querySelector("#verifiedTreeDisplay");
 
 const rbTree = new RedBlackTree();
 const nodeHeight = 30;
@@ -43,6 +44,7 @@ findNodeButton.addEventListener('click', (event) => {
 resetButton.addEventListener('click', (event) => {
     rbTree.reset();
     displayTree(rbTree.getRoot(), 0, 0, null);
+    updateVerifiedTreeDisplay()
 })
 
 generateGraphButton.addEventListener('click', (event) => {
@@ -56,8 +58,12 @@ generateGraphButton.addEventListener('click', (event) => {
 
 function createNode(value) {
     const node = new RedBlackNode(value);
+    node.onChange(() => {
+        displayTree(rbTree.getRoot(), 0, 0, null);
+    })
     rbTree.insertNode(node);
     displayTree(rbTree.getRoot(), 0, 0, null);
+    updateVerifiedTreeDisplay()
 }
 
 
@@ -171,8 +177,43 @@ function findNode(value) {
 function deleteNode(value) {
     rbTree.deleteNode(value);
     displayTree(rbTree.getRoot(), 0, 0, null);
+    updateVerifiedTreeDisplay()
 }
 
+function randomInsertionDeletion() {
+    // // Insert a bunch of values randomly
+    // const valuesToInsert = Array.from({ length: 30 }, () => Math.floor(Math.random() * 1000));
+    // const uniqueValues = [...new Set(valuesToInsert)]; // Remove duplicates
+
+    // uniqueValues.forEach(value => {
+    //     createNode(value);
+    // });
+
+    // // Delete half of the values randomly
+    // const valuesToDelete = uniqueValues.slice(0, Math.floor(uniqueValues.length / 2));
+    // // debugger
+    // valuesToDelete.forEach(value => {
+    //     deleteNode(value);
+    // });
+
+    // rbTree.reset()
+    const a = [581, 301, 830, 177, 363, 680, 890, 130, 233, 340, 403, 596, 706, 853, 951, 45, 132, 269, 346, 488, 616, 918, 98]
+    a.forEach(value => {
+        createNode(value);
+    });
+}
+
+function updateVerifiedTreeDisplay() {
+    const { isValid, message } = rbTree.verifyRedBlackTree();
+    verifiedTreeDisplay.innerHTML = message;
+    if (isValid) {
+        verifiedTreeDisplay.style.color = 'green';
+    } else {
+        verifiedTreeDisplay.style.color = 'red';
+    }
+}
+
+// randomInsertionDeletion()
 
 
 

@@ -164,6 +164,7 @@ class RedBlackTree {
     }
 
     insertNode(node) {
+        if (this.findNode(node.value)) return;
         const parentNode = this.locateParent(node);
         node.setParent(parentNode);
         if (parentNode === null) {
@@ -267,94 +268,109 @@ class RedBlackTree {
 
     // Fix the "double black" problem in red-black trees
     fixDoubleBlack(node, parent) {
-        if (!parent) return;
+    if (!parent) return;
 
-        // Determine if node is left or right child
-        const isLeftChild = parent.getLeftChild() === node;
-        let sibling = isLeftChild ? parent.getRightChild() : parent.getLeftChild();
+    // Determine if node is left or right child
+    const isLeftChild = parent.getLeftChild() === node;
+    let sibling = isLeftChild ? parent.getRightChild() : parent.getLeftChild();
 
-        // Case 1: Sibling is RED
-        if (sibling && sibling.getColor() === 'red') {
-            parent.setColor('red');
-            sibling.setColor('black');
+    // Case 1: Sibling is RED
+    if (sibling && sibling.getColor() === 'red') {
+        parent.setColor('red');
+        sibling.setColor('black');
 
+        if (isLeftChild) {
+            this.leftRotate(parent);
+        } else {
+            this.rightRotate(parent);
+        }
+
+        // Update sibling after rotation
+        sibling = isLeftChild ? parent.getRightChild() : parent.getLeftChild();
+        
+        // Recursive call with the new configuration
+        this.fixDoubleBlack(node, parent);
+        return;
+    }
+
+    // Case 2: Sibling is BLACK with two BLACK children
+    const leftNephewBlack = !sibling?.getLeftChild() || sibling.getLeftChild().getColor() === 'black';
+    const rightNephewBlack = !sibling?.getRightChild() || sibling.getRightChild().getColor() === 'black';
+
+    if (sibling && leftNephewBlack && rightNephewBlack) {
+        // Color sibling red
+        sibling.setColor('red');
+
+        // If parent is red, color it black and we're done
+        if (parent.getColor() === 'red') {
+            parent.setColor('black');
+        }
+        // If parent is black, it becomes double black, recurse upward
+        else {
+            this.fixDoubleBlack(parent, parent.getParent());
+        }
+        return;
+    }
+
+    // Case 3: Sibling is BLACK with at least one RED child
+    if (sibling) {
+        // Determine if red nephew is on the outer or inner side
+        const outerNephewRed = isLeftChild ?
+            (sibling.getRightChild() && sibling.getRightChild().getColor() === 'red') :
+            (sibling.getLeftChild() && sibling.getLeftChild().getColor() === 'red');
+
+        const innerNephewRed = isLeftChild ?
+            (sibling.getLeftChild() && sibling.getLeftChild().getColor() === 'red') :
+            (sibling.getRightChild() && sibling.getRightChild().getColor() === 'red');
+
+        // Case 3a: Outer nephew is RED
+        if (outerNephewRed) {
+            // Sibling gets parent's color
+            sibling.setColor(parent.getColor());
+            // Parent becomes black
+            parent.setColor('black');
+
+            // Outer nephew becomes black
             if (isLeftChild) {
+                if (sibling.getRightChild()) sibling.getRightChild().setColor('black');
                 this.leftRotate(parent);
             } else {
+                if (sibling.getLeftChild()) sibling.getLeftChild().setColor('black');
                 this.rightRotate(parent);
             }
-
-            // Update sibling after rotation
-            sibling = isLeftChild ? parent.getRightChild() : parent.getLeftChild();
         }
+        // Case 3b: Inner nephew is RED
+        else if (innerNephewRed) {
+            // Get the inner nephew
+            const innerNephew = isLeftChild ? sibling.getLeftChild() : sibling.getRightChild();
+            innerNephew.setColor('black');  // Make the inner nephew black
+            
+            sibling.setColor('red');  // Make sibling red for the first rotation
 
-        // Case 2: Sibling is BLACK with two BLACK children
-        const leftNephewBlack = !sibling?.getLeftChild() || sibling.getLeftChild().getColor() === 'black';
-        const rightNephewBlack = !sibling?.getRightChild() || sibling.getRightChild().getColor() === 'black';
-
-        if (leftNephewBlack && rightNephewBlack) {
-            // Color sibling red
-            if (sibling) sibling.setColor('red');
-
-            // If parent is red, color it black and we're done
-            if (parent.getColor() === 'red') {
-                parent.setColor('black');
+            if (isLeftChild) {
+                this.rightRotate(sibling);
+                // Update sibling after rotation
+                sibling = parent.getRightChild();
+            } else {
+                this.leftRotate(sibling);
+                // Update sibling after rotation
+                sibling = parent.getLeftChild();
             }
-            // If parent is black, it becomes double black, recurse upward
-            else {
-                this.fixDoubleBlack(parent, parent.getParent());
-            }
-            return;
-        }
-
-        // Case 3: Sibling is BLACK with at least one RED child
-        if (sibling) {
-            // Determine if red nephew is on the outer or inner side
-            const outerNephewRed = isLeftChild ?
-                (sibling.getRightChild() && sibling.getRightChild().getColor() === 'red') :
-                (sibling.getLeftChild() && sibling.getLeftChild().getColor() === 'red');
-
-            const innerNephewRed = isLeftChild ?
-                (sibling.getLeftChild() && sibling.getLeftChild().getColor() === 'red') :
-                (sibling.getRightChild() && sibling.getRightChild().getColor() === 'red');
-
-            // Case 3a: Outer nephew is RED
-            if (outerNephewRed) {
-                // Sibling gets parent's color
-                sibling.setColor(parent.getColor());
-                // Parent becomes black
-                parent.setColor('black');
-
-                // Outer nephew becomes black
-                if (isLeftChild) {
-                    if (sibling.getRightChild()) sibling.getRightChild().setColor('black');
-                    this.leftRotate(parent);
-                } else {
-                    if (sibling.getLeftChild()) sibling.getLeftChild().setColor('black');
-                    this.rightRotate(parent);
-                }
-            }
-            // Case 3b: Inner nephew is RED
-            else if (innerNephewRed) {
-                // Get the inner nephew
-                const innerNephew = isLeftChild ? sibling.getLeftChild() : sibling.getRightChild();
-
-                // Nephew gets parent's color
-                innerNephew.setColor(parent.getColor());
-                // Parent becomes black
-                parent.setColor('black');
-
-                // Double rotation
-                if (isLeftChild) {
-                    this.rightRotate(sibling);
-                    this.leftRotate(parent);
-                } else {
-                    this.leftRotate(sibling);
-                    this.rightRotate(parent);
-                }
+            
+            // Now handle like Case 3a
+            sibling.setColor(parent.getColor());
+            parent.setColor('black');
+            
+            if (isLeftChild) {
+                if (sibling.getRightChild()) sibling.getRightChild().setColor('black');
+                this.leftRotate(parent);
+            } else {
+                if (sibling.getLeftChild()) sibling.getLeftChild().setColor('black');
+                this.rightRotate(parent);
             }
         }
     }
+}
 
 
     // Find minimum value node in a subtree
@@ -374,6 +390,148 @@ class RedBlackTree {
         }
         return current;
     }
+
+
+
+    /**
+ * Verifies that a tree meets all Red-Black Tree properties:
+ * 1. Every node is either red or black
+ * 2. The root is black
+ * 3. All leaves (null nodes) are black
+ * 4. If a node is red, then both its children are black
+ * 5. Every path from root to leaves contains the same number of black nodes
+ * 
+ * @param {RedBlackTree} tree - The tree to verify
+ * @returns {Object} - Result containing isValid flag and any error messages
+ */
+    verifyRedBlackTree() {
+        if (!this.root) {
+            return { isValid: true, message: "Empty tree is valid" };
+        }
+
+        const result = {
+            isValid: true,
+            message: "Tree is a valid Red-Black Tree"
+        };
+
+        // Property 2: Root is black
+        if (this.getRoot().getColor() !== 'black') {
+            result.isValid = false;
+            result.message = "Property violation: Root is not black";
+            return result;
+        }
+
+        // Check all other properties
+        const blackHeightResult = this.verifyNode(this.getRoot());
+
+        if (!blackHeightResult.isValid) {
+            return blackHeightResult;
+        }
+
+        return result;
+    }
+
+    /**
+     * Helper function to verify a subtree rooted at node
+     * 
+     * @param {RedBlackNode} node - The root of the subtree to verify
+     * @returns {Object} - Result containing isValid flag, message and blackHeight
+     */
+    verifyNode(node) {
+        // Null nodes are leaves and are considered black
+        if (node === null) {
+            return { isValid: true, blackHeight: 0 };
+        }
+
+        // Property 1: Every node is either red or black
+        if (node.getColor() !== 'red' && node.getColor() !== 'black') {
+            return {
+                isValid: false,
+                message: `Property violation: Node with value ${node.getValue()} has invalid color ${node.getColor()}`
+            };
+        }
+
+        const left = node.getLeftChild();
+        const right = node.getRightChild();
+
+        // Property 4: If a node is red, both its children are black
+        if (node.getColor() === 'red') {
+            if ((left !== null && left.getColor() === 'red') ||
+                (right !== null && right.getColor() === 'red')) {
+                return {
+                    isValid: false,
+                    message: `Property violation: Red node with value ${node.getValue()} has a red child`
+                };
+            }
+        }
+
+        // Check parent pointers are consistent
+        if (left !== null && left.getParent() !== node) {
+            return {
+                isValid: false,
+                message: `Inconsistent parent pointer: Left child of ${node.getValue()} has incorrect parent`
+            };
+        }
+
+        if (right !== null && right.getParent() !== node) {
+            return {
+                isValid: false,
+                message: `Inconsistent parent pointer: Right child of ${node.getValue()} has incorrect parent`
+            };
+        }
+
+        // BST property check: left < node < right
+        if (left !== null && left.getValue() >= node.getValue()) {
+            return {
+                isValid: false,
+                message: `BST property violation: Left child (${left.getValue()}) >= parent (${node.getValue()})`
+            };
+        }
+
+        if (right !== null && right.getValue() < node.getValue()) {
+            return {
+                isValid: false,
+                message: `BST property violation: Right child (${right.getValue()}) < parent (${node.getValue()})`
+            };
+        }
+
+        // Recursively check left and right subtrees
+        const leftResult = this.verifyNode(left);
+        if (!leftResult.isValid) {
+            return leftResult;
+        }
+
+        const rightResult = this.verifyNode(right);
+        if (!rightResult.isValid) {
+            return rightResult;
+        }
+
+        // Property 5: All paths from a node to its leaf nodes have the same number of black nodes
+        if (leftResult.blackHeight !== rightResult.blackHeight) {
+            return {
+                isValid: false,
+                message: `Property violation: Black height mismatch at node ${node.getValue()}: left=${leftResult.blackHeight}, right=${rightResult.blackHeight}`
+            };
+        }
+
+        // Calculate black height of current node
+        const currentBlackHeight = node.getColor() === 'black' ?
+            leftResult.blackHeight + 1 :
+            leftResult.blackHeight;
+
+        return {
+            isValid: true,
+            blackHeight: currentBlackHeight
+        };
+    }
+
+    // Usage example:
+    // const tree = new RedBlackTree();
+    // tree.insertNode(new RedBlackNode(10));
+    // tree.insertNode(new RedBlackNode(20));
+    // tree.insertNode(new RedBlackNode(30));
+    // const result = verifyRedBlackTree(tree);
+    // console.log(result.isValid, result.message);
 }
 
 class RedBlackNode {
@@ -383,6 +541,17 @@ class RedBlackNode {
         this.leftChild = leftChild;
         this.rightChild = rightChild;
         this.parent = parent;
+        this.changeCallback = null;
+    }
+
+    onChange(callback) {
+        this.changeCallback = callback; // Store the callback
+    }
+
+    triggerChange() {
+        if (this.changeCallback) {
+            this.changeCallback(); // Trigger the callback if it exists
+        }
     }
 
     isLeaf() {
@@ -399,21 +568,25 @@ class RedBlackNode {
 
     setLeftChild(leftChild = null) {
         this.leftChild = leftChild;
+        this.triggerChange(); // Trigger callback on change
     }
 
     setRightChild(rightChild = null) {
         this.rightChild = rightChild;
+        this.triggerChange(); // Trigger callback on change
     }
 
     removeLeftChild() {
         const leftChild = this.leftChild;
         this.leftChild = null;
+        this.triggerChange(); // Trigger callback on change
         return leftChild;
     }
 
     removeRightChild() {
         const rightChild = this.rightChild;
         this.rightChild = null;
+        this.triggerChange(); // Trigger callback on change
         return rightChild;
     }
 
@@ -423,6 +596,7 @@ class RedBlackNode {
 
     setValue(value) {
         this.value = value;
+        this.triggerChange(); // Trigger callback on change
     }
 
     getColor() {
@@ -431,6 +605,7 @@ class RedBlackNode {
 
     setColor(color) {
         this.color = color;
+        this.triggerChange(); // Trigger callback on change
     }
 
     getParent() {
@@ -439,9 +614,12 @@ class RedBlackNode {
 
     setParent(parent) {
         this.parent = parent;
+        this.triggerChange(); // Trigger callback on change
     }
 }
 
+// For running node jest tests
 module.exports = { RedBlackNode, RedBlackTree };
 
+// // for browser user
 // export { RedBlackNode, RedBlackTree };
