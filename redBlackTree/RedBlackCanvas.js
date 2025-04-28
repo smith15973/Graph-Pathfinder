@@ -57,6 +57,7 @@ generateGraphButton.addEventListener('click', (event) => {
 })
 
 function createNode(value) {
+    if (!value) return;
     const node = new RedBlackNode(value);
     node.onChange(() => {
         displayTree(rbTree.getRoot(), 0, 0, null);
@@ -151,7 +152,7 @@ function calculateFontSize(width, height, baseFontSize) {
     return Math.max(8, Math.min(fontSize, 48));
 }
 
-function generateRandomGraph(size = 50, min = 1, max = 100) {
+function generateRandomGraph(size = 50, min = 0, max = 999) {
     rbTree.reset();
     const values = Array.from({ length: size }, () => Math.floor(Math.random() * max));
     values.forEach(value => {
