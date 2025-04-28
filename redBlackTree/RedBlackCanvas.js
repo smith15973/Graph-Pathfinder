@@ -121,6 +121,7 @@ function displayNode(node, level, left,) {
     nodeElement.style.width = nodeWidth + 'px';
     nodeElement.style.fontSize = primaryFontSize + 'px';
     nodeElement.innerHTML = node.getValue();
+    nodeElement.addEventListener('click', () => deleteNode(node.getValue()));
 
     canvas.appendChild(nodeElement);
 }
