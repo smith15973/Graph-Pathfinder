@@ -193,76 +193,98 @@ class RedBlackTree {
     }
 
     deleteNode(value) {
-        // Find the node to delete
+        // Step 1: Find the node to delete
         const nodeToDelete = this.findNode(value);
         if (!nodeToDelete) {
-            return null
+            return null; // Node not found
         }
-
-        // Save if the node to be deleted is black (will need fixing if true)
-        const isBlack = nodeToDelete.getColor() === 'black';
-
-        // Case 1: Node has two children
-        if (nodeToDelete.getLeftChild() && nodeToDelete.getRightChild()) {
-            // Find successor (smallest node in right subtree)
-            const successor = this.findMinimum(nodeToDelete.getRightChild());
-
-            // Copy successor value to the node
-            nodeToDelete.setValue(successor.getValue());
-
-            // We'll delete the successor node directly instead of recursing
-            this.removeNodeDirectly(successor);
-
-            // Fix Red-Black properties if successor was black
-            if (successor.getColor() === 'black') {
-                this.fixDoubleBlack(null, successor.getParent());
+    
+        // We'll use y as the node to be removed from the tree structure
+        // And x as the node that replaces y
+        let y = nodeToDelete;
+        let yOriginalColor = y.getColor();
+        let x = null;
+        let xParent = null;
+    
+        // Case: Node has 0 or 1 child
+        if (!nodeToDelete.getLeftChild() || !nodeToDelete.getRightChild()) {
+            // y is the node to delete
+            if (!nodeToDelete.getLeftChild()) {
+                // Replace with right child (might be null)
+                x = nodeToDelete.getRightChild();
+            } else {
+                // Replace with left child
+                x = nodeToDelete.getLeftChild();
             }
-        }
-        // Case 2: Node has at most one child
+            xParent = y.getParent();
+            
+            // Replace nodeToDelete with x
+            this.transplant(nodeToDelete, x);
+        } 
+        // Case: Node has 2 children
         else {
-            this.removeNodeDirectly(nodeToDelete);
-
-            // Fix Red-Black properties if deleted node was black
-            if (isBlack) {
-                const replacement = nodeToDelete.getLeftChild() || nodeToDelete.getRightChild();
-                if (replacement && replacement.getColor() === 'red') {
-                    // Just color the replacement black and we're done
-                    replacement.setColor('black');
-                } else {
-                    this.fixDoubleBlack(replacement, nodeToDelete.getParent());
+            // Find successor (minimum in right subtree)
+            y = this.findMinimum(nodeToDelete.getRightChild());
+            yOriginalColor = y.getColor();
+            x = y.getRightChild(); // Successor's right child (might be null)
+            
+            // If successor is directly the right child of nodeToDelete
+            if (y.getParent() === nodeToDelete) {
+                xParent = y;
+                if (x) {
+                    x.setParent(y);
                 }
+            } else {
+                // Successor is deeper in the tree
+                xParent = y.getParent();
+                
+                // Replace successor with its right child
+                this.transplant(y, y.getRightChild());
+                
+                // Link nodeToDelete's right child as successor's right child
+                y.setRightChild(nodeToDelete.getRightChild());
+                y.getRightChild().setParent(y);
             }
+            
+            // Replace nodeToDelete with successor
+            this.transplant(nodeToDelete, y);
+            
+            // Link nodeToDelete's left child as successor's left child
+            y.setLeftChild(nodeToDelete.getLeftChild());
+            y.getLeftChild().setParent(y);
+            y.setColor(nodeToDelete.getColor());
         }
-
-        // Ensure root is black
+        
+        // If original color was black, we need to fix red-black properties
+        // This corresponds to cases in your table where DB (Double Black) handling is needed
+        if (yOriginalColor === 'black') {
+            this.fixDoubleBlack(x, xParent);
+        }
+        
+        // Always ensure root is black
         if (this.root) {
             this.root.setColor('black');
         }
-        return nodeToDelete
+        
+        return nodeToDelete;
     }
-
-    // Helper to directly remove a node without recursion
-    removeNodeDirectly(node) {
-        // Determine the replacement (child if any)
-        const replacement = node.getLeftChild() || node.getRightChild();
-
-        // Update parent pointers
-        if (node === this.root) {
-            this.root = replacement;
-            if (replacement) {
-                replacement.setParent(null);
-            }
+    
+    // Helper method to replace one subtree with another
+    transplant(u, v) {
+        if (!u.getParent()) {
+            // u is root
+            this.root = v;
+        } else if (u === u.getParent().getLeftChild()) {
+            // u is left child
+            u.getParent().setLeftChild(v);
         } else {
-            const parent = node.getParent();
-            if (parent.getLeftChild() === node) {
-                parent.setLeftChild(replacement);
-            } else {
-                parent.setRightChild(replacement);
-            }
-
-            if (replacement) {
-                replacement.setParent(parent);
-            }
+            // u is right child
+            u.getParent().setRightChild(v);
+        }
+        
+        // Update v's parent if v exists
+        if (v) {
+            v.setParent(u.getParent());
         }
     }
 
@@ -525,13 +547,6 @@ class RedBlackTree {
         };
     }
 
-    // Usage example:
-    // const tree = new RedBlackTree();
-    // tree.insertNode(new RedBlackNode(10));
-    // tree.insertNode(new RedBlackNode(20));
-    // tree.insertNode(new RedBlackNode(30));
-    // const result = verifyRedBlackTree(tree);
-    // console.log(result.isValid, result.message);
 }
 
 class RedBlackNode {

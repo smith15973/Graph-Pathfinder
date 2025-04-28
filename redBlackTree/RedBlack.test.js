@@ -836,34 +836,34 @@ describe('RedBlackTree Deletion Tests', () => {
   });
 
   // Stress tests for deletion
-  // test('should maintain properties after multiple random insertions and deletions', () => {
-  //   // Insert a bunch of values randomly
-  //   const valuesToInsert = Array.from({ length: 50 }, () => Math.floor(Math.random() * 1000));
-  //   const uniqueValues = [...new Set(valuesToInsert)]; // Remove duplicates
+  test('should maintain properties after multiple random insertions and deletions', () => {
+    // Insert a bunch of values randomly
+    const valuesToInsert = Array.from({ length: 50 }, () => Math.floor(Math.random() * 1000));
+    const uniqueValues = [...new Set(valuesToInsert)]; // Remove duplicates
 
-  //   uniqueValues.forEach(value => {
-  //     tree.insertNode(new RedBlackNode(value));
-  //   });
+    uniqueValues.forEach(value => {
+      tree.insertNode(new RedBlackNode(value));
+    });
 
-  //   // Delete half of the values randomly
-  //   const valuesToDelete = uniqueValues.slice(0, Math.floor(uniqueValues.length / 2));
+    // Delete half of the values randomly
+    const valuesToDelete = uniqueValues.slice(0, Math.floor(uniqueValues.length / 2));
 
-  //   valuesToDelete.forEach(value => {
-  //     tree.deleteNode(value);
-  //     expect(tree.findNode(value)).toBeNull();
-  //   });
+    valuesToDelete.forEach(value => {
+      tree.deleteNode(value);
+      expect(tree.findNode(value)).toBeNull();
+    });
 
-  //   // Check tree properties still hold
-  //   expect(isRootBlack(tree)).toBe(true);
-  //   expect(hasValidRedNodes(tree.root)).toBe(true);
-  //   expect(checkBlackHeight(tree.root)).not.toBe(-1);
+    // Check tree properties still hold
+    expect(isRootBlack(tree)).toBe(true);
+    expect(hasValidRedNodes(tree.root)).toBe(true);
+    expect(checkBlackHeight(tree.root)).not.toBe(-1);
 
-  //   // Check that remaining values are still in the tree
-  //   const remainingValues = uniqueValues.filter(val => !valuesToDelete.includes(val));
-  //   remainingValues.forEach(value => {
-  //     expect(tree.findNode(value)).not.toBeNull();
-  //   });
-  // });
+    // Check that remaining values are still in the tree
+    const remainingValues = uniqueValues.filter(val => !valuesToDelete.includes(val));
+    remainingValues.forEach(value => {
+      expect(tree.findNode(value)).not.toBeNull();
+    });
+  });
 
   // Edge cases
   test('deleteNode should handle deleting the last node', () => {
